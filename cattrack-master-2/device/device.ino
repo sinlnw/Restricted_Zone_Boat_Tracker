@@ -157,6 +157,56 @@ void init_card() {
     error_blink_loop();
   }
   LOG("successful.\r\n");
+
+
+  ////rachata start
+  #define AREA_FILE_NAME "/AREA.txt"
+  /* #define AREA_FILE_NAME2 "AREA.txt"
+  SdFile area_file;
+  LOG_TS("Reading area file...");
+  if (!open_file_in_root(area_file,volume,AREA_FILE_NAME2,O_READ)) {
+    DEBUG_PRINTLN("Cannot open area file");
+  }
+  while (area_file.available()) {
+    Serial.write(area_file.read());
+  }
+  area_file.close(); */
+  LOG_TS("Initializing SD card for reading area file...");
+
+  if (!SD.begin(PIN_SD_SS)) {
+    LOG_TS("initialization failed!");
+    return;
+  }
+  LOG("done.\r\n");
+
+  // Open the file for reading
+  File area_file = SD.open(AREA_FILE_NAME);
+  if (!area_file) {
+    LOG_TS("Error: Could not open area file.\r\n");
+    return;
+  }
+
+  LOG_TS("Reading area file contents:...");
+
+  // Read the file until there's nothing else in it
+  /* LOG("\r\n");
+  while (area_file.available()) {
+    Serial.write(area_file.read());
+  }
+  LOG("\r\n"); */
+
+  JsonDocument doc;
+  DeserializationError error = deserializeJson(doc, area_file);
+  if (error) {
+    LOG("Failed to read file, error: %s\r\n", error.c_str());
+  }
+  const char* geometry_type = doc["geometry"]["type"];
+  LOG(geometry_type);
+
+  // Close the file
+  area_file.close();
+  LOG("Open area file successful\r\n"); 
+  ////rachata end
 }
 
 
@@ -694,18 +744,7 @@ void loop() {
   }
 
 
-  ////rachata start
-  SdVolume volume;
-  if (!volume.init(card,config_part_idx)) {
-    LOG_TS("Cannot open configuration volume\r\n");
-    error_blink_loop();
-  }
-  LOG_TS("Reading area file..."); // TODO:try read AREA file from SD card 
-  if (!config.read_from_volume(volume)) {
-    LOG("failed!\r\n");
-    error_blink_loop();
-  }
-  ////rachata end
+  
 }
 
 /***********************************************
