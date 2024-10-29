@@ -1,0 +1,5 @@
+XSym
+0024
+03dd345de70d0368c767304a81c5fcc8
+../lib/mcurses/mcurses.h
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       

@@ -1,0 +1,5 @@
+XSym
+0031
+054622439cb041d1d9c4972bfbdb3062
+../lib/mcurses/mcurses-config.h
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                

@@ -1,0 +1,5 @@
+XSym
+0014
+3fb536244e02489f5411afbdb1a5bc35
+../../editor.h
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 

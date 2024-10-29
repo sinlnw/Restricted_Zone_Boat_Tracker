@@ -1,0 +1,13 @@
+Arduino
+=======
+SD 1.2.2
+minmea
+Adafruit_ASFcore
+Adafruit_SleepyDog
+RadioHead
+RTCZero
+
+
+Python
+======
+pyserial

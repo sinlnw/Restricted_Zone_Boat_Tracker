@@ -1,0 +1,5 @@
+XSym
+0022
+8af68e780a654da8792f371cd701f1cd
+../../mcurses-config.h
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         

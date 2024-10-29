@@ -1,0 +1,9 @@
+*.log
+*~
+*.swp
+venv/*
+tmp/*
+django-cattrack2/*
+*.DS_Store
+data/*
+logs/*
