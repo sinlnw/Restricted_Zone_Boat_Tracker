@@ -11,6 +11,7 @@
  *   #define TC3_Handler TC3_Handler_not_used
  */
 #include <Adafruit_SleepyDog.h>
+#include <ArduinoJson.h>
 #include "version.h"
 
 #define DEBUG
@@ -691,6 +692,20 @@ void loop() {
     }
     log_and_report();
   }
+
+
+  ////rachata start
+  SdVolume volume;
+  if (!volume.init(card,config_part_idx)) {
+    LOG_TS("Cannot open configuration volume\r\n");
+    error_blink_loop();
+  }
+  LOG_TS("Reading area file..."); // TODO:try read AREA file from SD card 
+  if (!config.read_from_volume(volume)) {
+    LOG("failed!\r\n");
+    error_blink_loop();
+  }
+  ////rachata end
 }
 
 /***********************************************
