@@ -190,7 +190,7 @@ void init_card() {
 
   LOG_TS("Reading area file contents:...");
   
-  
+  // TODO: read the coordinates from many areas
   JsonDocument mydoc;
   DeserializationError error = deserializeJson(mydoc, area_file);
   if (error) {
