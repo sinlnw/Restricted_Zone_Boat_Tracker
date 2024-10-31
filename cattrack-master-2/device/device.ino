@@ -167,6 +167,8 @@ void init_card() {
   if (!open_file_in_root(area_file,volume,AREA_FILE_NAME2,O_READ)) {
     DEBUG_PRINTLN("Cannot open area file");
   }
+
+  // Read the file until there's nothing else in it
   while (area_file.available()) {
     Serial.write(area_file.read());
   }
@@ -187,22 +189,25 @@ void init_card() {
   }
 
   LOG_TS("Reading area file contents:...");
-
-  // Read the file until there's nothing else in it
-  /* LOG("\r\n");
-  while (area_file.available()) {
-    Serial.write(area_file.read());
-  }
-  LOG("\r\n"); */
-
-  JsonDocument doc;
-  DeserializationError error = deserializeJson(doc, area_file);
+  
+  
+  JsonDocument mydoc;
+  DeserializationError error = deserializeJson(mydoc, area_file);
   if (error) {
     LOG("Failed to read file, error: %s\r\n", error.c_str());
   }
-  const char* geometry_type = doc["geometry"]["type"];
+  const char* geometry_type = mydoc["geometry"]["type"];
   LOG(geometry_type);
-
+  LOG("\r\n");
+  // Access the coordinates array
+  JsonArray coordinates = mydoc["geometry"]["coordinates"][0];
+  
+  for (JsonArray coordinate : coordinates) {
+    float longitude = coordinate[0]as<float>();
+    float latitude = coordinate[1]as<float>();
+    LOG("Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+  }
+  
   // Close the file
   area_file.close();
   LOG("Open area file successful\r\n"); 
