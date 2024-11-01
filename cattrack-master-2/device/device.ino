@@ -190,23 +190,30 @@ void init_card() {
 
   LOG_TS("Reading area file contents:...");
   
-  // TODO: read the coordinates from many areas
   JsonDocument mydoc;
   DeserializationError error = deserializeJson(mydoc, area_file);
   if (error) {
     LOG_TS("Failed to read file, error: %s\r\n", error.c_str());
   }
-  const char* geometry_type = mydoc["geometry"]["type"];
-  LOG(geometry_type);
-  LOG("\r\n");
+
+  JsonArray all_areas = mydoc["all_drawings"].as<JsonArray>();
+  int area_count = 0;
+  for(JsonObject myarea : all_areas){
+    area_count++;
+    LOG("Area %d\r\n", area_count);
+    const char* geometry_type = myarea["geometry"]["type"];
+    LOG(geometry_type);
+    LOG("\r\n");
   // Access the coordinates array
-  JsonArray coordinates = mydoc["geometry"]["coordinates"][0];
+    JsonArray coordinates = myarea["geometry"]["coordinates"][0];
   
-  for (JsonArray coordinate : coordinates) {
-    float longitude = coordinate[0].as<float>();
-    float latitude = coordinate[1].as<float>();
-    LOG("Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+    for (JsonArray coordinate : coordinates) {
+      float longitude = coordinate[0].as<float>();
+      float latitude = coordinate[1].as<float>();
+      LOG("Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+    }
   }
+  
   
   // Close the file
   area_file.close();
