@@ -55,6 +55,7 @@ struct pt ptReport;
 struct pt ptLogger;
 //rachata start
 JsonDocument myarea_doc;
+JsonArray all_areas;
 //rachata end
 volatile bool pps_detected = false;
 #ifdef DEBUG
@@ -198,7 +199,7 @@ void init_card() {
     LOG_TS("Failed to read file, error: %s\r\n", error.c_str());
   }
 
-  JsonArray all_areas = myarea_doc["all_drawings"].as<JsonArray>();
+  all_areas = myarea_doc["all_drawings"].as<JsonArray>(); // read the array of all areas
   int area_count = 0;
   for(JsonObject myarea : all_areas){
     area_count++;
@@ -533,6 +534,32 @@ PT_THREAD(taskLogger(struct pt* pt)) {
     report.satellites = GPS.satellites;
     report.temperature = read_temperature();
     report.last_heard_from_gw = millis()-last_heard_from_gw;
+
+    //rachata start 
+    //check if the point is in the area polygons
+    // read area polygon
+    for(JsonObject myarea : all_areas){
+      // Access the coordinates array
+      JsonArray coordinates = myarea["geometry"]["coordinates"][0];
+
+      float prev_longitude = 0.0;
+      float prev_latitude = 0.0;
+      bool first_coordinate = true;
+      for (JsonArray coordinate : coordinates) {
+        if (first_coordinate){
+          continue;
+        }
+        first_coordinate = false;
+        float longitude = coordinate[0].as<float>();
+        float latitude = coordinate[1].as<float>();
+
+
+        // Update the previous coordinate
+        prev_longitude = longitude;
+        prev_latitude = latitude;
+
+    }
+    //rachata end
     storage.push(report);
     LOG_TS("Record pushed to storage; record count = %d\r\n",storage.count());
   }
