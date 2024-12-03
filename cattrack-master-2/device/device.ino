@@ -53,7 +53,9 @@ uint8_t acked_seq = 0;
 struct pt ptRadio;
 struct pt ptReport;
 struct pt ptLogger;
-
+//rachata start
+JsonDocument myarea_doc;
+//rachata end
 volatile bool pps_detected = false;
 #ifdef DEBUG
 volatile bool wake_now = false;
@@ -190,13 +192,13 @@ void init_card() {
 
   LOG_TS("Reading area file contents:...");
   
-  JsonDocument mydoc;
-  DeserializationError error = deserializeJson(mydoc, area_file);
+
+  DeserializationError error = deserializeJson(myarea_doc, area_file);
   if (error) {
     LOG_TS("Failed to read file, error: %s\r\n", error.c_str());
   }
 
-  JsonArray all_areas = mydoc["all_drawings"].as<JsonArray>();
+  JsonArray all_areas = myarea_doc["all_drawings"].as<JsonArray>();
   int area_count = 0;
   for(JsonObject myarea : all_areas){
     area_count++;
@@ -483,6 +485,19 @@ PT_THREAD(taskReport(struct pt* pt)) {
   PT_END(pt);
 }
 
+// Rachata start
+bool isPointInPolygon(int nvert, float *vertx, float *verty, float testx, float testy)
+{
+  int i, j = 0;
+  bool c = false;
+  for (i = 0, j = nvert-1; i < nvert; j = i++) {
+    if ( ((verty[i]>testy) != (verty[j]>testy)) &&
+	 (testx < (vertx[j]-vertx[i]) * (testy-verty[i]) / (verty[j]-verty[i]) + vertx[i]) )
+       c = !c;
+  }
+  return c;
+}
+// Rachata end
 /***********************************************
  * 
  */
