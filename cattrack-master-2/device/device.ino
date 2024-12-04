@@ -487,15 +487,37 @@ PT_THREAD(taskReport(struct pt* pt)) {
 }
 
 // Rachata start
-bool isPointInPolygon(int nvert, float *vertx, float *verty, float testx, float testy)
+bool isPointInPolygon(int nvert,  float test_long, float test_lat)
 {
   int i, j = 0;
   bool c = false;
-  for (i = 0, j = nvert-1; i < nvert; j = i++) {
-    if ( ((verty[i]>testy) != (verty[j]>testy)) &&
-	 (testx < (vertx[j]-vertx[i]) * (testy-verty[i]) / (verty[j]-verty[i]) + vertx[i]) )
-       c = !c;
-  }
+
+  for(JsonObject myarea : all_areas){
+      // Access the coordinates array
+      JsonArray coordinates = myarea["geometry"]["coordinates"][0];
+
+      float prev_longitude = 0.0;
+      float prev_latitude = 0.0;
+      bool first_coordinate = true;
+      for (JsonArray coordinate : coordinates) {
+        float longitude = coordinate[0].as<float>();
+        float latitude = coordinate[1].as<float>();
+        if (!first_coordinate){
+          if ( ((latitude>test_lat) != (prev_latitude>test_lat)) &&
+            (test_long < (prev_longitude-longitude) * (test_lat-latitude) / (prev_latitude-latitude) + longitude) )
+            c = !c;
+        }
+        first_coordinate = false;
+        //LOG("test prev Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+        //LOG("test Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+
+        // Update the previous coordinate
+        prev_longitude = longitude;
+        prev_latitude = latitude;
+
+      }
+    }
+
   return c;
 }
 // Rachata end
@@ -508,10 +530,13 @@ PT_THREAD(taskLogger(struct pt* pt)) {
   static uint32_t last_collected = 0;
 
   PT_BEGIN(pt);
-
+  LOG("testtest \r\n");
   for (;;) {
+    LOG("testtest2 \r\n");
     GPS.reset_buffer(true);  // reset GPS reading and flush serial buffer
+    LOG("gps read test\r\n");
     PT_WAIT_UNTIL(pt,GPS.read()); // start over from the newest report
+    LOG("gps read test2\r\n");
     uint16_t collect_interval = 
       is_day() ? config.collect_interval_day : config.collect_interval_night;
     if (last_collected && (millis() - last_collected < collect_interval*1000))
@@ -552,16 +577,19 @@ PT_THREAD(taskLogger(struct pt* pt)) {
         first_coordinate = false;
         float longitude = coordinate[0].as<float>();
         float latitude = coordinate[1].as<float>();
-
+        LOG("test prev Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+        LOG("test Longitude: %f, Latitude: %f\r\n", longitude, latitude);
 
         // Update the previous coordinate
         prev_longitude = longitude;
         prev_latitude = latitude;
 
+      }
     }
     //rachata end
     storage.push(report);
     LOG_TS("Record pushed to storage; record count = %d\r\n",storage.count());
+    
   }
 
   PT_END(pt);
