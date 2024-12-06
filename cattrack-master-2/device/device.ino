@@ -62,7 +62,7 @@ bool buzzer_on = false;
 #define BUZZER_PIN 6
 #define BUZZER_DURATION 1 // in seconds
 #define IN_AREA_INTERVAL 5 // in seconds
-#define ADAFRUIT_FEATHER_M0
+// #define ADAFRUIT_FEATHER_M0
 //rachata end
 
 volatile bool pps_detected = false;
@@ -558,19 +558,21 @@ PT_THREAD(taskLogger(struct pt* pt)) {
     uint16_t collect_interval = 
       is_day() ? config.collect_interval_day : config.collect_interval_night;
 
-    //rachata start
+    //rachata start //OR: make buzzer ON OFF using PT_DELAY
     if (coord_in_area){
       collect_interval = IN_AREA_INTERVAL; // if in the area, collect data more frequently
       //turn buzzer on and off
         if(!buzzer_on && (millis() - buzzer_starttime > (IN_AREA_INTERVAL - BUZZER_DURATION)*1000)){
           LOG("Buzzer on\r\n");
           digitalWrite(BUZZER_PIN, HIGH);
+          digitalWrite(LED_BUILTIN,HIGH);
           buzzer_starttime = millis();
           buzzer_on = true;
         }
         else if(buzzer_on && millis() - buzzer_starttime > BUZZER_DURATION*1000){
           LOG("Buzzer off\r\n");
           digitalWrite(BUZZER_PIN, LOW);
+          digitalWrite(LED_BUILTIN,HIGH);
           buzzer_starttime = millis();
           buzzer_on = false;
         }
