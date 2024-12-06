@@ -53,10 +53,17 @@ uint8_t acked_seq = 0;
 struct pt ptRadio;
 struct pt ptReport;
 struct pt ptLogger;
+
 //rachata start
 JsonDocument myarea_doc;
 JsonArray all_areas;
+uint32_t buzzer_starttime = 0;
+bool buzzer_on = false;
+#define BUZZER_PIN 6
+#define BUZZER_DURATION 1000 // in milliseconds
+#define ADAFRUIT_FEATHER_M0
 //rachata end
+
 volatile bool pps_detected = false;
 #ifdef DEBUG
 volatile bool wake_now = false;
@@ -487,21 +494,30 @@ PT_THREAD(taskReport(struct pt* pt)) {
 }
 
 // Rachata start
-bool isPointInPolygon(int nvert,  float test_long, float test_lat)
+bool isPointInAreas(float test_long, float test_lat)
 {
-  int i, j = 0;
-  bool c = false;
+  // check if point is in any of area polygons
+
+  bool c = false; // the counter of the crossing , true if the point is in the area
 
   for(JsonObject myarea : all_areas){
       // Access the coordinates array
       JsonArray coordinates = myarea["geometry"]["coordinates"][0];
 
+      /* // Ensure the polygon has at least 3 vertices
+      if (coordinates.size() < 3) {
+        continue;
+      } */
+
       float prev_longitude = 0.0;
       float prev_latitude = 0.0;
       bool first_coordinate = true;
+
       for (JsonArray coordinate : coordinates) {
+
         float longitude = coordinate[0].as<float>();
         float latitude = coordinate[1].as<float>();
+        // Check if the test point is inside the area polygon using the ray-casting algorithm
         if (!first_coordinate){
           if ( ((latitude>test_lat) != (prev_latitude>test_lat)) &&
             (test_long < (prev_longitude-longitude) * (test_lat-latitude) / (prev_latitude-latitude) + longitude) )
@@ -528,6 +544,7 @@ PT_THREAD(taskLogger(struct pt* pt)) {
 
   static uint32_t ts = 0;
   static uint32_t last_collected = 0;
+  static bool coord_in_area = false;
 
   PT_BEGIN(pt);
   LOG("testtest \r\n");
@@ -539,6 +556,13 @@ PT_THREAD(taskLogger(struct pt* pt)) {
     LOG("gps read test2\r\n");
     uint16_t collect_interval = 
       is_day() ? config.collect_interval_day : config.collect_interval_night;
+
+    //rachata start
+    if (coord_in_area){
+      collect_interval = BUZZER_DURATION*1000;
+    }
+    //rachata end
+    
     if (last_collected && (millis() - last_collected < collect_interval*1000))
       continue;
     LOG_TS("Synchronizing time...\r\n");
@@ -562,29 +586,9 @@ PT_THREAD(taskLogger(struct pt* pt)) {
 
     //rachata start 
     //check if the point is in the area polygons
-    // read area polygon
-    for(JsonObject myarea : all_areas){
-      // Access the coordinates array
-      JsonArray coordinates = myarea["geometry"]["coordinates"][0];
-
-      float prev_longitude = 0.0;
-      float prev_latitude = 0.0;
-      bool first_coordinate = true;
-      for (JsonArray coordinate : coordinates) {
-        if (first_coordinate){
-          continue;
-        }
-        first_coordinate = false;
-        float longitude = coordinate[0].as<float>();
-        float latitude = coordinate[1].as<float>();
-        LOG("test prev Longitude: %f, Latitude: %f\r\n", longitude, latitude);
-        LOG("test Longitude: %f, Latitude: %f\r\n", longitude, latitude);
-
-        // Update the previous coordinate
-        prev_longitude = longitude;
-        prev_latitude = latitude;
-
-      }
+    coord_in_area = isPointInAreas(GPS.longitude/100000, GPS.latitude/100000);
+    if(coord_in_area){
+      LOG("Point is in the area\r\n");
     }
     //rachata end
     storage.push(report);
@@ -732,6 +736,7 @@ void setup() {
   pinMode(LED_BUILTIN,OUTPUT);
   pinMode(PIN_1PPS,INPUT_PULLUP);
   pinMode(PIN_GPS_EN,OUTPUT);
+  pinMode(BUZZER_PIN, OUTPUT); //rachata
   pinMode(PIN_RFM95_CS,OUTPUT);
   digitalWrite(PIN_RFM95_CS,HIGH);
   GPS_SERIAL.begin(9600);

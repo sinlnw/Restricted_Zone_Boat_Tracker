@@ -1,0 +1,23 @@
+for(JsonObject myarea : all_areas){
+      // Access the coordinates array
+      JsonArray coordinates = myarea["geometry"]["coordinates"][0];
+
+      float prev_longitude = 0.0;
+      float prev_latitude = 0.0;
+      bool first_coordinate = true;
+      for (JsonArray coordinate : coordinates) {
+        if (first_coordinate){
+          continue;
+        }
+        first_coordinate = false;
+        float longitude = coordinate[0].as<float>();
+        float latitude = coordinate[1].as<float>();
+        LOG("test prev Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+        LOG("test Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+
+        // Update the previous coordinate
+        prev_longitude = longitude;
+        prev_latitude = latitude;
+
+      }
+    }
