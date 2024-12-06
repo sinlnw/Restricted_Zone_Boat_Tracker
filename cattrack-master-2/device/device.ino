@@ -60,7 +60,8 @@ JsonArray all_areas;
 uint32_t buzzer_starttime = 0;
 bool buzzer_on = false;
 #define BUZZER_PIN 6
-#define BUZZER_DURATION 1000 // in milliseconds
+#define BUZZER_DURATION 1 // in seconds
+#define IN_AREA_INTERVAL 5 // in seconds
 #define ADAFRUIT_FEATHER_M0
 //rachata end
 
@@ -559,10 +560,27 @@ PT_THREAD(taskLogger(struct pt* pt)) {
 
     //rachata start
     if (coord_in_area){
-      collect_interval = BUZZER_DURATION*1000;
+      collect_interval = IN_AREA_INTERVAL; // if in the area, collect data more frequently
+      //turn buzzer on and off
+        if(!buzzer_on && (millis() - buzzer_starttime > (IN_AREA_INTERVAL - BUZZER_DURATION)*1000)){
+          LOG("Buzzer on\r\n");
+          digitalWrite(BUZZER_PIN, HIGH);
+          buzzer_starttime = millis();
+          buzzer_on = true;
+        }
+        else if(buzzer_on && millis() - buzzer_starttime > BUZZER_DURATION*1000){
+          LOG("Buzzer off\r\n");
+          digitalWrite(BUZZER_PIN, LOW);
+          buzzer_starttime = millis();
+          buzzer_on = false;
+        }
+    } else {
+      // not in area , turn off the buzzer if it is on
+        digitalWrite(BUZZER_PIN, LOW);
+        buzzer_on = false;
     }
     //rachata end
-    
+
     if (last_collected && (millis() - last_collected < collect_interval*1000))
       continue;
     LOG_TS("Synchronizing time...\r\n");
