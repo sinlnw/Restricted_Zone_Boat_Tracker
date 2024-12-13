@@ -525,8 +525,8 @@ bool isPointInAreas(float test_long, float test_lat)
             c = !c;
         }
         first_coordinate = false;
-        //LOG("test prev Longitude: %f, Latitude: %f\r\n", longitude, latitude);
-        //LOG("test Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+        LOG("test isPointInAreas prev Longitude: %f, Latitude: %f\r\n", prev_longitude, prev_latitude);
+        LOG("test isPointInAreas Longitude: %f, Latitude: %f\r\n", longitude, latitude);
 
         // Update the previous coordinate
         prev_longitude = longitude;
@@ -548,13 +548,13 @@ PT_THREAD(taskLogger(struct pt* pt)) {
   static bool coord_in_area = false;
 
   PT_BEGIN(pt);
-  LOG("testtest \r\n");
+  LOG("test logger begin \r\n");
   for (;;) {
-    LOG("testtest2 \r\n");
+    LOG("test loop start \r\n");
     GPS.reset_buffer(true);  // reset GPS reading and flush serial buffer
-    LOG("gps read test\r\n");
+    LOG("test loop start reading gps\r\n");
     PT_WAIT_UNTIL(pt,GPS.read()); // start over from the newest report
-    LOG("gps read test2\r\n");
+    LOG("test gps finished read\r\n");
     uint16_t collect_interval = 
       is_day() ? config.collect_interval_day : config.collect_interval_night;
 
