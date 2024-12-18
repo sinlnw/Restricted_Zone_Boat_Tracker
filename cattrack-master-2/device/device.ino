@@ -500,7 +500,7 @@ bool isPointInAreas(float test_long, float test_lat)
   // check if point is in any of area polygons
 
   bool c = false; // the counter of the crossing , true if the point is in the area
-
+  LOG("test isPointInAreas test Longitude: %f, Latitude: %f\r\n", test_long, test_lat);
   for(JsonObject myarea : all_areas){
       // Access the coordinates array
       JsonArray coordinates = myarea["geometry"]["coordinates"][0];
@@ -518,6 +518,9 @@ bool isPointInAreas(float test_long, float test_lat)
 
         float longitude = coordinate[0].as<float>();
         float latitude = coordinate[1].as<float>();
+        if (longitude < -180){
+          longitude = 360 + longitude;
+        }
         // Check if the test point is inside the area polygon using the ray-casting algorithm
         if (!first_coordinate){
           if ( ((latitude>test_lat) != (prev_latitude>test_lat)) &&
@@ -607,10 +610,10 @@ PT_THREAD(taskLogger(struct pt* pt)) {
 
     //rachata start 
     //check if the point is in the area polygons
-    /* coord_in_area = isPointInAreas(GPS.longitude/100000, GPS.latitude/100000);
+    coord_in_area = isPointInAreas(GPS.longitude/10000000, GPS.latitude/10000000);// TODO: deal with the unit of the location
     if(coord_in_area){
       LOG("Point is in the area\r\n");
-    } */
+    }
     //rachata end
     storage.push(report);
     LOG_TS("Record pushed to storage; record count = %d\r\n",storage.count());
