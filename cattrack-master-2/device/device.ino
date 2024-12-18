@@ -550,14 +550,14 @@ PT_THREAD(taskLogger(struct pt* pt)) {
   PT_BEGIN(pt);
   LOG("test logger begin \r\n");
   for (;;) {
-    LOG("test loop start \r\n");
+    LOG("\ntest loop start \r\n");
     GPS.reset_buffer(true);  // reset GPS reading and flush serial buffer
     LOG("test loop start reading gps\r\n");
     PT_WAIT_UNTIL(pt,GPS.read()); // start over from the newest report
     LOG("test gps finished read\r\n");
     uint16_t collect_interval = 
       is_day() ? config.collect_interval_day : config.collect_interval_night;
-
+    collect_interval = 30; //rachata override for testing
     //rachata start //OR: make buzzer ON OFF using PT_DELAY
     if (coord_in_area){
       collect_interval = IN_AREA_INTERVAL; // if in the area, collect data more frequently
@@ -583,8 +583,9 @@ PT_THREAD(taskLogger(struct pt* pt)) {
     }
     //rachata end
 
-    if (last_collected && (millis() - last_collected < collect_interval*1000))
-      continue;
+    if (last_collected && (millis() - last_collected < collect_interval*1000)){
+      LOG("wait for more time to collect gps data \r\n\n"); // rachata for testing
+      continue;}
     LOG_TS("Synchronizing time...\r\n");
     set_time(GPS.year+2000, GPS.month, GPS.day, GPS.hour, GPS.minute, GPS.seconds);
     LOG_TS("Time synchronized\r\n");
@@ -606,10 +607,10 @@ PT_THREAD(taskLogger(struct pt* pt)) {
 
     //rachata start 
     //check if the point is in the area polygons
-    coord_in_area = isPointInAreas(GPS.longitude/100000, GPS.latitude/100000);
+    /* coord_in_area = isPointInAreas(GPS.longitude/100000, GPS.latitude/100000);
     if(coord_in_area){
       LOG("Point is in the area\r\n");
-    }
+    } */
     //rachata end
     storage.push(report);
     LOG_TS("Record pushed to storage; record count = %d\r\n",storage.count());
