@@ -61,7 +61,7 @@ uint32_t buzzer_starttime = 0;
 bool buzzer_on = false;
 #define BUZZER_PIN 6
 #define BUZZER_DURATION 1 // in seconds
-#define IN_AREA_INTERVAL 5 // in seconds
+#define IN_AREA_INTERVAL 10 // in seconds
 // #define ADAFRUIT_FEATHER_M0
 //rachata end
 
@@ -563,6 +563,7 @@ PT_THREAD(taskLogger(struct pt* pt)) {
     collect_interval = 30; //rachata override for testing
     //rachata start //OR: make buzzer ON OFF using PT_DELAY
     if (coord_in_area){
+      LOG("Point is in the area active buzzer\r\n");
       collect_interval = IN_AREA_INTERVAL; // if in the area, collect data more frequently
       //turn buzzer on and off
         if(!buzzer_on && (millis() - buzzer_starttime > (IN_AREA_INTERVAL - BUZZER_DURATION)*1000)){
@@ -575,11 +576,12 @@ PT_THREAD(taskLogger(struct pt* pt)) {
         else if(buzzer_on && millis() - buzzer_starttime > BUZZER_DURATION*1000){
           LOG("Buzzer off\r\n");
           digitalWrite(BUZZER_PIN, LOW);
-          digitalWrite(LED_BUILTIN,HIGH);
+          digitalWrite(LED_BUILTIN,LOW);
           buzzer_starttime = millis();
           buzzer_on = false;
         }
     } else {
+      LOG("not in area deactivate Buzzer\r\n");
       // not in area , turn off the buzzer if it is on
         digitalWrite(BUZZER_PIN, LOW);
         buzzer_on = false;
@@ -610,10 +612,9 @@ PT_THREAD(taskLogger(struct pt* pt)) {
 
     //rachata start 
     //check if the point is in the area polygons
-    coord_in_area = isPointInAreas(GPS.longitude/10000000, GPS.latitude/10000000);// TODO: deal with the unit of the location
-    if(coord_in_area){
-      LOG("Point is in the area\r\n");
-    }
+    coord_in_area = isPointInAreas(GPS.longitude/10000000.0, GPS.latitude/10000000.0);// TODO: deal with the unit of the location
+    LOG("Coord is %d\r\n", coord_in_area);
+    SHORT_BLINK(50,100);
     //rachata end
     storage.push(report);
     LOG_TS("Record pushed to storage; record count = %d\r\n",storage.count());
