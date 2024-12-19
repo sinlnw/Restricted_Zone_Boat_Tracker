@@ -580,7 +580,7 @@ PT_THREAD(taskLogger(struct pt* pt)) {
           buzzer_starttime = millis();
           buzzer_on = false;
         }
-    } else {
+    } else if (buzzer_on) {
       LOG("not in area deactivate Buzzer\r\n");
       // not in area , turn off the buzzer if it is on
         digitalWrite(BUZZER_PIN, LOW);
