@@ -55,10 +55,11 @@ struct pt ptReport;
 struct pt ptLogger;
 
 //rachata start
-JsonDocument myarea_doc;
+JsonDocument all_areas_doc;
 JsonArray all_areas;
 uint32_t buzzer_starttime = 0;
 bool buzzer_on = false;
+#define AREA_FILE_NAME "/AREA.txt"
 #define BUZZER_PIN 6
 #define BUZZER_DURATION 1 // in seconds
 #define IN_AREA_INTERVAL 10 // in seconds
@@ -171,7 +172,9 @@ void init_card() {
 
 
   ////rachata start
-  #define AREA_FILE_NAME "/AREA.txt"
+  
+  // Read the area file
+
   /* #define AREA_FILE_NAME2 "AREA.txt"
   SdFile area_file;
   LOG_TS("Reading area file...");
@@ -202,28 +205,36 @@ void init_card() {
   LOG_TS("Reading area file contents:...");
   
 
-  DeserializationError error = deserializeJson(myarea_doc, area_file);
+  DeserializationError error = deserializeJson(all_areas_doc, area_file);
   if (error) {
     LOG_TS("Failed to read file, error: %s\r\n", error.c_str());
   }
-
-  all_areas = myarea_doc["all_drawings"].as<JsonArray>(); // read the array of all areas
+  all_areas = all_areas_doc.as<JsonArray>();
   int area_count = 0;
-  for(JsonObject myarea : all_areas){
+  for (JsonObject myarea : all_areas){
     area_count++;
     LOG("Area %d\r\n", area_count);
-    const char* geometry_type = myarea["geometry"]["type"];
-    LOG(geometry_type);
-    LOG("\r\n");
-  // Access the coordinates array
-    JsonArray coordinates = myarea["geometry"]["coordinates"][0];
+    JsonArray all_polygon = myarea["all_drawings"].as<JsonArray>(); // read the array of all areas
+    
+
+    int polygon_count = 0;
+    for(JsonObject mypolygon : all_polygon){
+      polygon_count++;
+      LOG("Polygon %d\r\n", polygon_count);
+      const char* geometry_type = mypolygon["geometry"]["type"];
+      LOG(geometry_type);
+      LOG("\r\n");
+      // Access the coordinates array
+      JsonArray coordinates = mypolygon["geometry"]["coordinates"][0];
   
-    for (JsonArray coordinate : coordinates) {
-      float longitude = coordinate[0].as<float>();
-      float latitude = coordinate[1].as<float>();
-      LOG("Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+      for (JsonArray coordinate : coordinates) {
+        float longitude = coordinate[0].as<float>();
+        float latitude = coordinate[1].as<float>();
+        LOG("Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+      }
     }
   }
+  
   
   
   // Close the file
@@ -540,6 +551,27 @@ bool isPointInAreas(float test_long, float test_lat)
 
   return c;
 }
+
+bool is_date_in_day_month_range(int test_day, int test_month, int start_day, int start_month, int end_day, int end_month) {
+    if (start_month < 1 || start_month > 12 || end_month < 1 || end_month > 12 ||
+        start_day < 1 || start_day > 31 || end_day < 1 || end_day > 31 ||
+        test_month < 1 || test_month > 12 || test_day < 1 || test_day > 31) {
+        // invalid date range
+        return false;
+    }
+
+    if (start_month > end_month || (start_month == end_month && start_day > end_day)) {
+        // day_month_range cross year
+        return is_date_in_day_month_range(test_day, test_month, start_day, start_month, 31, 12) ||
+               is_date_in_day_month_range(test_day, test_month, 1, 1, end_day, end_month);
+    } else {
+        // day_month_range same year
+        return (start_month <= test_month && test_month <= end_month) &&
+               ((test_month == start_month && test_day >= start_day) ||
+                (test_month == end_month && test_day <= end_day) ||
+                (start_month < test_month && test_month < end_month));
+    }
+}
 // Rachata end
 /***********************************************
  * 
@@ -612,7 +644,7 @@ PT_THREAD(taskLogger(struct pt* pt)) {
 
     //rachata start 
     //check if the point is in the area polygons
-    coord_in_area = isPointInAreas(GPS.longitude/10000000.0, GPS.latitude/10000000.0);// TODO: deal with the unit of the location
+    //coord_in_area = isPointInAreas(GPS.longitude/10000000.0, GPS.latitude/10000000.0);// TODO: deal with the unit of the location
     LOG("Coord is %d\r\n", coord_in_area);
     SHORT_BLINK(50,100);
     //rachata end
