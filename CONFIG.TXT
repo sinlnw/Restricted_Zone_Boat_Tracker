@@ -1,0 +1,20 @@
+radio_device_address  1
+radio_gateway_address 0
+radio_freq            445.50
+radio_tx_power        23
+use_ack               1
+ack_timeout           1
+long_range            0
+tx_repeat             3
+prog_file_name        DEVICE.BIN
+
+## for deployment
+collect_interval_day    180
+collect_interval_night  180
+day_start_hour          6
+day_end_hour            18
+time_zone               7
+gps_max_wait_for_fix    120
+next_collect_no_fix     120
+total_slots             3
+slot_interval           30
