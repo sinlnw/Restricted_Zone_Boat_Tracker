@@ -59,6 +59,7 @@ JsonDocument all_areas_doc;
 JsonArray all_areas;
 uint32_t buzzer_starttime = 0;
 bool buzzer_on = false;
+bool is_area_file_exist = false;
 #define AREA_FILE_NAME "/AREA.txt"
 #define BUZZER_PIN A1
 #define BUZZER_DURATION 1 // in seconds
@@ -198,39 +199,43 @@ void init_card() {
   // Open the file for reading
   File area_file = SD.open(AREA_FILE_NAME);
   if (!area_file) {
+    is_area_file_exist = false;
     LOG_TS("Error: Could not open area file.\r\n");
-    return;
+    //return;
+  }else{
+    is_area_file_exist = true;
   }
 
   LOG_TS("Reading area file contents:...");
   
+  if (is_area_file_exist){
+    DeserializationError error = deserializeJson(all_areas_doc, area_file);
+    if (error) {
+      LOG_TS("Failed to read file, error: %s\r\n", error.c_str());
+    }
+    all_areas = all_areas_doc["all_areas"].as<JsonArray>();
+    int area_count = 0;
+    for (JsonObject myarea : all_areas){
+      area_count++;
+      LOG("Area %d\r\n", area_count);
+      JsonArray all_polygon = myarea["all_drawings"].as<JsonArray>(); // read all polygons of each area
+      
 
-  DeserializationError error = deserializeJson(all_areas_doc, area_file);
-  if (error) {
-    LOG_TS("Failed to read file, error: %s\r\n", error.c_str());
-  }
-  all_areas = all_areas_doc.as<JsonArray>();
-  int area_count = 0;
-  for (JsonObject myarea : all_areas){
-    area_count++;
-    LOG("Area %d\r\n", area_count);
-    JsonArray all_polygon = myarea["all_drawings"].as<JsonArray>(); // read all polygons of each area
+      int polygon_count = 0;
+      for(JsonObject mypolygon : all_polygon){
+        polygon_count++;
+        LOG("Polygon %d\r\n", polygon_count);
+        const char* geometry_type = mypolygon["geometry"]["type"];
+        LOG(geometry_type);
+        LOG("\r\n");
+        // Access the coordinates array
+        JsonArray coordinates = mypolygon["geometry"]["coordinates"][0];
     
-
-    int polygon_count = 0;
-    for(JsonObject mypolygon : all_polygon){
-      polygon_count++;
-      LOG("Polygon %d\r\n", polygon_count);
-      const char* geometry_type = mypolygon["geometry"]["type"];
-      LOG(geometry_type);
-      LOG("\r\n");
-      // Access the coordinates array
-      JsonArray coordinates = mypolygon["geometry"]["coordinates"][0];
-  
-      for (JsonArray coordinate : coordinates) {
-        float longitude = coordinate[0].as<float>();
-        float latitude = coordinate[1].as<float>();
-        LOG("Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+        for (JsonArray coordinate : coordinates) {
+          float longitude = coordinate[0].as<float>();
+          float latitude = coordinate[1].as<float>();
+          LOG("Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+        }
       }
     }
   }
@@ -662,7 +667,9 @@ PT_THREAD(taskLogger(struct pt* pt)) {
 
     //rachata start 
     //check if the point is in the area polygons
+    if (is_area_file_exist){
     coord_in_area = isPointInAreas(GPS.longitude/10000000.0, GPS.latitude/10000000.0,report.day,report.month);// TODO: deal with the unit of the location
+    }
     LOG("Coord is %d\r\n", coord_in_area);
     SHORT_BLINK(50,100);
     //rachata end
