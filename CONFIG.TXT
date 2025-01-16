@@ -1,10 +1,10 @@
 radio_device_address  1
 radio_gateway_address 0
-radio_freq            445.50
+radio_freq            433.50
 radio_tx_power        23
 use_ack               1
-ack_timeout           1
-long_range            0
+ack_timeout           6
+long_range            1
 tx_repeat             3
 prog_file_name        DEVICE.BIN
 

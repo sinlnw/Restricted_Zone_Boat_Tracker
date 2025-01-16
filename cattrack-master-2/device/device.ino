@@ -60,7 +60,7 @@ JsonArray all_areas;
 uint32_t buzzer_starttime = 0;
 bool buzzer_on = false;
 #define AREA_FILE_NAME "/AREA.txt"
-#define BUZZER_PIN 6
+#define BUZZER_PIN A1
 #define BUZZER_DURATION 1 // in seconds
 #define IN_AREA_INTERVAL 10 // in seconds
 // #define ADAFRUIT_FEATHER_M0
@@ -442,7 +442,9 @@ PT_THREAD(taskRadio(struct pt* pt)) {
   PT_BEGIN(pt);
 
   for (;;) {
+    LOG("test taskradio loop start\r\n"); //rachata
     PT_WAIT_UNTIL(pt,radio.available());
+    LOG("test taskradio radio available\r\n"); //rachata
     uint8_t buf[64];
     Address from;
     uint8_t len = sizeof(buf);
@@ -473,6 +475,7 @@ PT_THREAD(taskReport(struct pt* pt)) {
   PT_BEGIN(pt);
 
   for (;;) {
+    LOG("test taskreport loop start\r\n"); //rachata
     PT_WAIT_UNTIL(pt,!storage.empty());
 
     LOG_TS("REPORT: record count = %d\r\n", storage.count());
@@ -487,7 +490,7 @@ PT_THREAD(taskReport(struct pt* pt)) {
       PT_WAIT_UNTIL(pt,
         last_heard_from_gw != 0 &&
         millis()-last_heard_from_gw < 2*(config.advertise_interval*1000));
-      LOG_TS("REPORT: TX seq=%d\r\n",pkt.seq);
+      LOG_TS("REPORT: TX seq=%d\r\n",pkt.seq); 
       radio.send(config.radio_gateway_address,(uint8_t*)&pkt,sizeof(pkt));
       PT_WAIT_UNTIL(pt,radio.send_done());
       LOG_TS("REPORT: done; awaiting ACK\r\n");
