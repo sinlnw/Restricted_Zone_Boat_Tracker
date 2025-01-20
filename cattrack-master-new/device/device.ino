@@ -726,13 +726,19 @@ public:
         LOG("lat=%f, lng=%f\r\n", GPS.longitude/100000.0, GPS.latitude/100000.0);
         coord_in_area = isPointInAreas(GPS.longitude/100000.0, GPS.latitude/100000.0,GPS.day,GPS.month);// TODO: deal with the unit of the location
       }
-      if (coord_in_area){
+      if (coord_in_area){//TODO: check if buzzer is working
         LOG("Coord is in area\r\n");
+          digitalWrite(BUZZER_PIN, HIGH);
+          digitalWrite(LED_BUILTIN,HIGH);
+          //buzzer_starttime = get_total_seconds();
+          buzzer_on = true;
       }else{
         LOG("Coord is not in area\r\n");
+          digitalWrite(BUZZER_PIN, LOW);
+          digitalWrite(LED_BUILTIN,LOW);
       }
       SHORT_BLINK(50,100);
-      //rachata end
+      
 
 
       storage.push(_pkt.report);
@@ -747,6 +753,16 @@ public:
       // SD library always pull CS high after every read/write operation anyway.
       digitalWrite(PIN_SD_SS, HIGH);
 
+      if(buzzer_on){
+          TASK_DELAY(BUZZER_DURATION*1000, _ts);
+          LOG("Buzzer off\r\n");
+          digitalWrite(BUZZER_PIN, LOW);
+          digitalWrite(LED_BUILTIN,LOW);
+          //buzzer_starttime = get_total_seconds();
+          buzzer_on = false;
+        
+      }
+      //rachata end
 #if !defined(ADALOGGER)
       // in non-ack mode, send logged data to gateway right away in the next
       // tx slot
