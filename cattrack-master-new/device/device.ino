@@ -25,6 +25,19 @@
 #include "card-utils.h"
 #include "task.h"
 
+//rachata start
+JsonDocument all_areas_doc;
+JsonArray all_areas;
+uint32_t buzzer_starttime = 0;
+bool buzzer_on = false;
+bool is_area_file_exist = false;
+#define AREA_FILE_NAME "/AREA.txt"
+#define BUZZER_PIN A1
+#define BUZZER_DURATION 1 // in seconds
+#define IN_AREA_INTERVAL 10 // in seconds
+// #define ADAFRUIT_FEATHER_M0
+//rachata end
+
 
 #if defined(SD_LOADER) && defined(ADAFRUIT_FEATHER_M0)
 __attribute__ ((section(".sketch_boot")))
