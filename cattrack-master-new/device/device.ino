@@ -594,6 +594,7 @@ private:
   uint8_t _send_seq;
   PacketReport _pkt;
   bool    _first_record;
+  bool coord_in_area; //rachata
 
 public:
   virtual const char * get_name() {
@@ -609,6 +610,7 @@ public:
     _last_collected = 0;
     _send_seq = 0;
     _first_record = true;
+    coord_in_area = false; //rachata
     for (;;) {
       GPS.reset_buffer(true);
       GPS_ON();
@@ -716,7 +718,23 @@ public:
       _pkt.report.quality = GPS.fixquality;
       _pkt.report.satellites = GPS.satellites;
       _pkt.report.temperature = read_temperature();
-      _pkt.report.ttf = time_to_fix;
+      _pkt.report.ttf = time_to_fix; 
+
+      //rachata start 
+      //check if the point is in the area polygons
+      if (is_area_file_exist){
+        LOG("lat=%f, lng=%f\r\n", GPS.longitude/100000.0, GPS.latitude/100000.0);
+        coord_in_area = isPointInAreas(GPS.longitude/100000.0, GPS.latitude/100000.0,GPS.day,GPS.month);// TODO: deal with the unit of the location
+      }
+      if (coord_in_area){
+        LOG("Coord is in area\r\n");
+      }else{
+        LOG("Coord is not in area\r\n");
+      }
+      SHORT_BLINK(50,100);
+      //rachata end
+
+
       storage.push(_pkt.report);
       LOG_TS("LOGGER: Record pushed to storage; record count = %lu\r\n", (uint32_t)storage.count());
 
