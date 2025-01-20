@@ -26,6 +26,7 @@
 #include "task.h"
 
 //rachata start
+#include <ArduinoJson.h>
 JsonDocument all_areas_doc;
 JsonArray all_areas;
 uint32_t buzzer_starttime = 0;
