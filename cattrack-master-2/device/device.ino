@@ -448,7 +448,7 @@ PT_THREAD(taskRadio(struct pt* pt)) {
 
   for (;;) {
     LOG("test taskradio loop start\r\n"); //rachata
-    PT_WAIT_UNTIL(pt,radio.available());
+    PT_WAIT_UNTIL(pt,radio.available());// rachata The problem is here?
     LOG("test taskradio radio available\r\n"); //rachata
     uint8_t buf[64];
     Address from;

@@ -1,0 +1,35 @@
+Energy consumption
+==================
+
+Feather M0 RFM95
+----------------
+
+  +-----+-----+-----+-------+----------+---------+
+  | MCU | LED | GPS | Radio |    SD    | Current |
+  |     |     |     |       |          |   (mA)  |
+  +-----+-----+-----+-------+----------+---------+
+  | on  | on  | on  | idle  | inserted |   39.6  |
+  | on  | on  | on  | tx    | inserted |  148.8  |
+  | on  | off | on  | idle  | inserted |   35.9  |
+  | on  | off | off | idle  | inserted |   12.3  |
+  | on  | off | off | sleep | inserted |   10.4  |
+  | off | off | off | sleep | inserted |    1.0  |
+  | off | off | off | sleep | removed  |    0.8  |
+  +-----+-----+-----+-------+----------+---------+
+
+
+Arduino MKR GSM 1400 + GNSS Shield
+----------------------------------
+
+    +----------------------+-----------+
+    |     Component        |  Current  |
+    |                      |   (mA)    |
+    +----------------------+-----------+
+    | Base                 |   16.88   |
+    | (all components off  |           |
+    |  except green LED)   |           |
+    | MCU                  |   13.34   |
+    | Amber LED            |    4.71   |
+    | GNSS                 |   30.61   |
+    | GSM                  |  141.29   |
+    +----------------------+-----------+

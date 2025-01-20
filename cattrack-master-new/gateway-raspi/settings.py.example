@@ -1,0 +1,62 @@
+from datetime import datetime
+from SX127x.constants import BW, CODING_RATE
+from boards import Board0, Board1, Board2, Board3
+
+LOG_FILE = datetime.now().strftime('gateway.%Y-%m-%d.%H%M.log')
+LOG_LEVEL = "INFO"
+
+API_URL = None
+API_TOKEN = ''
+GATEWAY_ID = 1
+
+COMMON_GATEWAY_ADDRESS = 0x00
+COMMON_BANDWIDTH = BW.BW125
+COMMON_CODING_RATE = CODING_RATE.CR4_5
+COMMON_SPREADING_FACTOR = 7
+COMMON_TX_POWER = 15
+COMMON_USE_ACK = True
+
+BOARDS = [
+    {
+        'board'  : Board0,
+        'freq'   : 433.50,
+        'bw'     : COMMON_BANDWIDTH,
+        'cr'     : COMMON_CODING_RATE,
+        'sf'     : COMMON_SPREADING_FACTOR,
+        'txpower': COMMON_TX_POWER,
+        'addr'   : COMMON_GATEWAY_ADDRESS,
+        'useack' : COMMON_USE_ACK,
+    },
+    {
+        'board'  : Board1,
+        'freq'   : 438.50,
+        'bw'     : COMMON_BANDWIDTH,
+        'cr'     : COMMON_CODING_RATE,
+        'sf'     : COMMON_SPREADING_FACTOR,
+        'txpower': COMMON_TX_POWER,
+        'addr'   : COMMON_GATEWAY_ADDRESS,
+        'useack' : COMMON_USE_ACK,
+    },
+    {
+        'board'  : Board2,
+        'freq'   : 443.50,
+        'bw'     : COMMON_BANDWIDTH,
+        'cr'     : COMMON_CODING_RATE,
+        'sf'     : COMMON_SPREADING_FACTOR,
+        'txpower': COMMON_TX_POWER,
+        'addr'   : COMMON_GATEWAY_ADDRESS,
+        'useack' : COMMON_USE_ACK,
+    },
+    {
+        'board'  : Board3,
+        'freq'   : 448.50,
+        'bw'     : COMMON_BANDWIDTH,
+        'cr'     : COMMON_CODING_RATE,
+        'sf'     : COMMON_SPREADING_FACTOR,
+        'txpower': COMMON_TX_POWER,
+        'addr'   : COMMON_GATEWAY_ADDRESS,
+        'useack' : COMMON_USE_ACK,
+    },
+]
+
+

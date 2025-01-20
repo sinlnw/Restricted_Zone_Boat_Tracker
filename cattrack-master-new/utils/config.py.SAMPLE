@@ -1,0 +1,8 @@
+API_HOST = "http://localhost:8000"
+API_LOCATION = API_HOST + "/api/location/"
+API_AUTH_TOKEN = API_HOST + "/api-token-auth/"
+
+API_USER = "user"
+API_PASSWD = "pass"
+
+RECONNECT_TIME = 20

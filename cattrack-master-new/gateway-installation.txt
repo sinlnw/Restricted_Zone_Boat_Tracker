@@ -1,0 +1,300 @@
+Basic Settings
+==============
+* The default raspi password should be changed to something else.
+
+    passwd
+
+* Change host name to something else, e.g., cattrack3, cattrack4.
+
+    sudo vi /etc/hostname
+    sudo vi /etc/hosts
+
+* Change timezone, enable ssh, and expand the root fs to fill the SD.
+
+    sudo raspi-config
+
+* Install necessary software
+
+    sudo apt-get update
+    sudo apt-get install git mercurial nginx ntpdate supervisor python3-venv
+
+* Create cattrack user and put in the dialout group to allow access to serial
+  devices
+
+    sudo adduser cattrack
+    sudo adduser cattrack dialout
+
+* Switch to cattrack user and create a folder for storing all logs
+
+    sudo su cattrack
+    mkdir -p /home/cattrack/logs
+    exit
+
+
+Setting WiFi
+============
+
+* Add the following to the file /etc/wpa_supplicant/wpa_supplicant.conf.  The
+  network with the highest priority will be selected.
+
+    network={
+        ssid="..."
+        psk="..."
+        priority=1
+    }
+
+    network={
+        ssid="..."
+        psk="..."
+        priority=2
+    }
+
+* Refresh the config:
+
+    sudo wpa_cli -i wlan0 reconfigure
+
+
+Enabling Real-Time Clock
+========================
+
+* Add the following line to /boot/config.txt.
+
+    dtoverlay=i2c-rtc,ds3231
+
+* Edit the file /lib/udev/hwclock-set and comment out the following lines:
+
+    #if [ -e /run/systemd/system ] ; then
+    # exit 0
+    #fi
+
+* Reboot.
+
+* Sync time with KU's NTP server.
+
+    sudo ntpdate ntp.ku.ac.th
+
+* Make sure the current time is correct using 'date' command.
+
+* Update RTC time with system time.
+
+    sudo hwclock -w
+
+
+Disabling HDMI
+==============
+
+* Add the following line to /etc/rc.local.
+
+    /usr/bin/tvservice -o
+
+
+Configuring Nginx
+=================
+* Create file /etc/nginx/sites-available/cattrack with the following
+  contents.
+
+  server {
+      listen 80;
+      server_name _;
+
+      location = /favicon.ico { access_log off; log_not_found off; }
+
+      location /static/ {
+          alias /home/cattrack/web/cattrack/static/;
+      }
+
+      location / {
+          include proxy_params;
+          proxy_pass http://unix:/home/cattrack/web/cattrack/run/gunicorn.sock;
+      }
+  }
+
+* Enable cattrack site and disable default site.
+
+    sudo ln -s /etc/nginx/sites-available/cattrack /etc/nginx/sites-enabled/
+    sudo rm /etc/nginx/sites-enabled/default
+
+
+Installing CatTrack Software
+============================
+
+* Fetch cattrack code from repos
+
+    sudo su cattrack
+    cd
+    git clone https://github.com/aphirak/django-cattrack2.git web
+    git clone https://github.com/iwing-cpe-ku/cattrack.git gateway
+
+* Create a virtual environment for django.
+
+    mkdir ~/virtualenv
+    cd ~/virtualenv
+    python3 -m venv cattrack
+    . cattrack/bin/activate
+    cd ~/web
+    pip install -r requirements.txt
+
+* Copy ~/web/gunicorn-start-cattrack.sh.example to
+  ~/web/gunicorn-start-cattrack.sh.
+
+    cp ~/web/gunicorn-start-cattrack.sh.example \
+       ~/web/gunicorn-start-cattrack.sh
+
+* Examine the file ~/web/gunicorn-start-cattrack.sh and make sure
+  all settings are correct, especially the folder names.
+
+* Create local settings.
+
+    cd ~/web/cattrack/cattrack
+    cp local_settings.py.SAMPLE local_settings.py
+
+* Examine local_settings.py and adjust the parameters properly.
+
+* Configure Django.
+
+    . ~/virtualenv/cattrack/bin/activate
+    cd ~/web/cattrack
+    ./manage.py migrate
+    ./manage.py collectstatic
+    ./manage.py createsuperuser
+
+* Test the web server by running.
+
+    ~/web/gunicorn-start-cattrack.sh
+
+  then set the browser to http://<hostname>/admin
+
+* Configure connect.py script.
+
+    cd ~/gateway/utils
+    cp config.py.SAMPLE config.py
+
+  Then examine config.py and change settings properly.
+
+* Prepare initial data for Django
+    * API user/password
+    * Cattle IDs and names
+    * VERY IMPORTANT!!!! device ID must be the same as its primary key
+      The easiest/fastest way is to use a script to add devices
+
+        . ~/virtualenv/cattrack/bin/activate
+        cd ~/web/cattrack
+
+        ./manage.py shell
+        >>> from api.models import Device
+        >>> for i in range(1,21):
+        ...     Device(dev_id=i,cattle_name=str(i)).save()
+
+
+Creating Reverse SSH Tunnels
+============================
+* Still logged in as cattrack user, generate SSH key and copy id.
+
+    ssh-keygen -t rsa -b 4096 -C "cattrack@iwing.cpe.ku.ac.th"
+    ssh-copy-id <host>
+
+* Edit the files ssh.tunnel.conf and web.tunnel.conf in ~/gateway/tunnel.
+  Make sure that they use DIFFERENT PORTS among all gateways simultaneously
+  deployed.
+
+* Make sure the SSH server is configured with GatewayPorts=yes in /etc/ssh/sshd_config.
+
+* Run ~/gateway/tunnel/run_tunnels.sh.
+
+* Try connecting to the configure host:port.
+
+
+Controlling Services with Supervisor
+====================================
+* Create file /etc/supervisor/conf.d/cattrack.conf with the following
+  contents:
+
+    [program:cattrack-web]
+    command = /home/cattrack/web/gunicorn-start-cattrack.sh
+    user = cattrack
+    stdout_logfile = NONE
+    redirect_stderr = false
+    environment=LANG=en_US.UTF-8,LC_ALL=en_US.UTF-8
+    stopasgroup=true   ; Stop parent and child processes
+
+    [program:cattrack-web-tunnel]
+    command = /home/cattrack/gateway/tunnel/ssh-tunnel.sh web
+    user = cattrack
+    stdout_logfile = /home/cattrack/logs/web-tunnel.log
+    redirect_stderr = true
+    environment=LANG=en_US.UTF-8,LC_ALL=en_US.UTF-8
+    stopasgroup=true   ; Stop parent and child processes
+
+    [program:cattrack-ssh-tunnel]
+    command = /home/cattrack/gateway/tunnel/ssh-tunnel.sh ssh
+    user = cattrack
+    stdout_logfile = /home/cattrack/logs/ssh-tunnel.log
+    redirect_stderr = true
+    environment=LANG=en_US.UTF-8,LC_ALL=en_US.UTF-8
+    stopasgroup=true   ; Stop parent and child processes
+
+    [program:cattrack-connect]
+    command = /home/cattrack/virtualenv/cattrack/bin/python /home/cattrack/gateway/utils/connect.py
+        /dev/ttyACM
+        /home/cattrack/logs/connect.log
+    user = cattrack
+    stdout_logfile = NONE
+    redirect_stderr = false
+    environment=LANG=en_US.UTF-8,LC_ALL=en_US.UTF-8
+    stopasgroup=true   ; Stop parent and child processes
+
+* Restart supervisor service
+
+    sudo service supervisor start
+
+* Check status of all cattrack services.  Make sure all services are RUNNING.
+
+    sudo supervisorctl
+
+
+Final Checkup
+=============
+* Power on the device.
+
+* Wait until the device responds to ping.
+
+    ping <device's local ip>
+
+* Log into the gateway via the local IP address.
+
+    ssh cattrack@<device's local ip>
+
+* Make sure that the clock is synchronized.
+
+    date
+    sudo hwclock -r
+
+* Make sure that HDMI is disabled.
+
+    /usr/bin/tvservice -s
+
+* Make sure that connect.py script is running by checking the logs.
+
+    cat /home/cattrack/logs/connect.log
+
+* Access the web via the local IP address by pointing the browser to
+
+    http://<device's local ip>/admin
+
+  then log in using the created user/password.
+
+* Check the logged locations via the URL:
+
+    http://<device's local ip>/admin/api/location/
+
+* Check the current map display via the URL:
+
+    http://<device's local ip>/map/current
+
+* Log into the gateway via the reverse ssh tunnel.
+
+    ssh -p <port> cattrack@<ssh server>
+
+* Access the web via the reverse ssh tunnel by pointing the browser to
+
+    http://<ssh server>:<port>/admin

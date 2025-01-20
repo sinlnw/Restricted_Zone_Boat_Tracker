@@ -1,0 +1,5 @@
+* Subscribe MQTT topic to
+    * confirm report publishing
+    * receive configuration
+* Enable access control for MQTT
+* Compute temperature correctly
