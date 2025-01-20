@@ -559,6 +559,29 @@ bool isPointInAreas(float test_long, float test_lat, int test_day, int test_mont
   return c;
 }
 
+
+bool is_date_in_day_month_range(int test_day, int test_month, int start_day, int start_month, int end_day, int end_month) {
+    if (start_month < 1 || start_month > 12 || end_month < 1 || end_month > 12 ||
+        start_day < 1 || start_day > 31 || end_day < 1 || end_day > 31 ||
+        test_month < 1 || test_month > 12 || test_day < 1 || test_day > 31) {
+        // invalid date range
+        return false;
+    }
+
+    if (start_month > end_month || (start_month == end_month && start_day > end_day)) {
+        // day_month_range cross year
+        return is_date_in_day_month_range(test_day, test_month, start_day, start_month, 31, 12) ||
+               is_date_in_day_month_range(test_day, test_month, 1, 1, end_day, end_month);
+    } else {
+        // day_month_range same year
+        return (start_month <= test_month && test_month <= end_month) &&
+               ((test_month == start_month && test_day >= start_day) ||
+                (test_month == end_month && test_day <= end_day) ||
+                (start_month < test_month && test_month < end_month));
+    }
+}
+// Rachata end
+
 /***********************************************
  * 
  */
