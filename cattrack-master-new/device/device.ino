@@ -496,6 +496,69 @@ public:
   }
 } taskReport;
 
+
+// Rachata start
+bool isPointInAreas(float test_long, float test_lat, int test_day, int test_month)
+{
+  // check if point is in any of area polygons
+
+  bool c = false; // the counter of the crossing , true if the point is in the area
+  LOG("test isPointInAreas test Longitude: %f, Latitude: %f\r\n", test_long, test_lat);
+  
+  // Loop through all areas
+  for (JsonObject myarea : all_areas){
+
+    //if today is not in the day_month_range, skip the area
+    int start_day = myarea["start_day"].as<int>();
+    int start_month = myarea["start_month"].as<int>();
+    int end_day = myarea["end_day"].as<int>();
+    int end_month = myarea["end_month"].as<int>();
+    if (!is_date_in_day_month_range(test_day, test_month, start_day, start_month, end_day, end_month)){
+      LOG("skip area with %d/%d - %d/%d\r\n", start_day, start_month, end_day, end_month);
+      continue;
+    }
+    JsonArray all_polygon = myarea["all_drawings"].as<JsonArray>();
+    for(JsonObject mypolygon : all_polygon){
+        // Access the coordinates array
+        JsonArray coordinates = mypolygon["geometry"]["coordinates"][0];
+
+        /* // Ensure the polygon has at least 3 vertices
+        if (coordinates.size() < 3) {
+          continue;
+        } */
+
+        float prev_longitude = 0.0;
+        float prev_latitude = 0.0;
+        bool first_coordinate = true;
+
+        for (JsonArray coordinate : coordinates) {
+
+          float longitude = coordinate[0].as<float>();
+          float latitude = coordinate[1].as<float>();
+          if (longitude < -180){
+            longitude = 360 + longitude;
+          }
+          // Check if the test point is inside the area polygon using the ray-casting algorithm
+          if (!first_coordinate){
+            if ( ((latitude>test_lat) != (prev_latitude>test_lat)) &&
+              (test_long < (prev_longitude-longitude) * (test_lat-latitude) / (prev_latitude-latitude) + longitude) )
+              c = !c;
+          }
+          first_coordinate = false;
+          LOG("test isPointInAreas prev Longitude: %f, Latitude: %f\r\n", prev_longitude, prev_latitude);
+          LOG("test isPointInAreas Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+
+          // Update the previous coordinate
+          prev_longitude = longitude;
+          prev_latitude = latitude;
+
+        }
+      }
+  }
+
+  return c;
+}
+
 /***********************************************
  * 
  */
