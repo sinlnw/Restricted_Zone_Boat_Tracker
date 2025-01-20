@@ -142,6 +142,69 @@ void init_card() {
     error_blink_loop(8);
   }
   LOG("successful.\r\n");
+
+
+  ////rachata start
+  
+  // Read the area file
+  LOG_TS("Initializing SD card for reading area file...");
+
+  if (!SD.begin(PIN_SD_SS)) {
+    LOG_TS("initialization failed!");
+    return;
+  }
+  LOG("done.\r\n");
+
+  // Open the file for reading
+  File area_file = SD.open(AREA_FILE_NAME);
+  if (!area_file) {
+    is_area_file_exist = false;
+    LOG_TS("Error: Could not open area file.\r\n");
+    //return;
+  }else{
+    is_area_file_exist = true;
+  }
+
+  LOG_TS("Reading area file contents:...");
+  
+  if (is_area_file_exist){
+    DeserializationError error = deserializeJson(all_areas_doc, area_file);
+    if (error) {
+      LOG_TS("Failed to read file, error: %s\r\n", error.c_str());
+    }
+    all_areas = all_areas_doc["all_areas"].as<JsonArray>();
+    int area_count = 0;
+    for (JsonObject myarea : all_areas){
+      area_count++;
+      LOG("Area %d\r\n", area_count);
+      JsonArray all_polygon = myarea["all_drawings"].as<JsonArray>(); // read all polygons of each area
+      
+
+      int polygon_count = 0;
+      for(JsonObject mypolygon : all_polygon){
+        polygon_count++;
+        LOG("Polygon %d\r\n", polygon_count);
+        const char* geometry_type = mypolygon["geometry"]["type"];
+        LOG(geometry_type);
+        LOG("\r\n");
+        // Access the coordinates array
+        JsonArray coordinates = mypolygon["geometry"]["coordinates"][0];
+    
+        for (JsonArray coordinate : coordinates) {
+          float longitude = coordinate[0].as<float>();
+          float latitude = coordinate[1].as<float>();
+          LOG("Longitude: %f, Latitude: %f\r\n", longitude, latitude);
+        }
+      }
+    }
+  }
+  
+  
+  
+  // Close the file
+  area_file.close();
+  LOG("Open area file successful\r\n"); 
+  ////rachata end
 }
 
 
