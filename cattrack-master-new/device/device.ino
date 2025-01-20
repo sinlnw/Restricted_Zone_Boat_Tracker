@@ -822,6 +822,7 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(PIN_1PPS, INPUT_PULLUP);
   pinMode(PIN_GPS_EN, OUTPUT);
+  pinMode(BUZZER_PIN, OUTPUT); //rachata
   pinMode(PIN_RFM95_CS, OUTPUT);
   digitalWrite(PIN_RFM95_CS, HIGH);
   GPS_SERIAL.begin(9600);
