@@ -36,6 +36,8 @@ bool is_area_file_exist = false;
 #define BUZZER_PIN A1
 #define BUZZER_DURATION 1 // in seconds
 #define IN_AREA_COL_INTERVAL 10 // in seconds
+#define TEST_INTERVAL 30 // in seconds
+#define USE_TEST_INTERVAL true 
 // #define ADAFRUIT_FEATHER_M0
 //rachata end
 
@@ -690,8 +692,14 @@ public:
       uint32_t time_to_fix = (millis() - _gps_on_time);
       uint16_t col_interval = is_day() ?
         config.collect_interval_day : config.collect_interval_night;
+      
+      if (USE_TEST_INTERVAL){//rachata 
+        col_interval = TEST_INTERVAL;
+      }
+
       _next_collection = get_total_seconds() + col_interval - (second_now%col_interval);
 
+      
       //rachata start
       if(coord_in_area){
         col_interval = IN_AREA_COL_INTERVAL; // if in area, collect data more frequently
