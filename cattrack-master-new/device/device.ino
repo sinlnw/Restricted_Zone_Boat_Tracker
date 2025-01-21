@@ -10,7 +10,7 @@
 // max ack timeouts before giving up
 #define MAX_ACK_TIMEOUT_COUNT 3
 #define ADAFRUIT_FEATHER_M0 // rachata
-//#define ADALOGGER //rachata
+//#define ADALOGGER
 #define DEBUG
 #include "debug.h"
 //#define STORAGE_DEBUG
@@ -35,7 +35,7 @@ bool is_area_file_exist = false;
 #define AREA_FILE_NAME "/AREA.txt"
 #define BUZZER_PIN A1
 #define BUZZER_DURATION 1 // in seconds
-#define IN_AREA_INTERVAL 10 // in seconds
+#define IN_AREA_COL_INTERVAL 10 // in seconds
 // #define ADAFRUIT_FEATHER_M0
 //rachata end
 
@@ -692,6 +692,12 @@ public:
         config.collect_interval_day : config.collect_interval_night;
       _next_collection = get_total_seconds() + col_interval - (second_now%col_interval);
 
+      //rachata start
+      if(coord_in_area){
+        col_interval = IN_AREA_COL_INTERVAL; // if in area, collect data more frequently
+      }
+      //rachata end
+
       _pkt.report.year = GPS.year;
       _pkt.report.month = GPS.month;
       _pkt.report.day = GPS.day;
@@ -724,8 +730,11 @@ public:
       //check if the point is in the area polygons
       if (is_area_file_exist){
         LOG("lat=%f, lng=%f\r\n", GPS.longitude/100000.0, GPS.latitude/100000.0);
-        coord_in_area = isPointInAreas(GPS.longitude/100000.0, GPS.latitude/100000.0,GPS.day,GPS.month);// TODO: deal with the unit of the location
+        coord_in_area = isPointInAreas(GPS.longitude/100000.0, GPS.latitude/100000.0,GPS.day,GPS.month);
       }
+      TASK_SHORT_BLINK(_ts, 100);;//means that coordinate is received and is being processed
+      TASK_SHORT_BLINK(_ts, 100);
+      
       if (coord_in_area){//TODO: check if buzzer is working
         LOG("Coord is in area\r\n");
           digitalWrite(BUZZER_PIN, HIGH);
@@ -737,7 +746,7 @@ public:
           digitalWrite(BUZZER_PIN, LOW);
           digitalWrite(LED_BUILTIN,LOW);
       }
-      SHORT_BLINK(50,100);
+      
       
 
 
