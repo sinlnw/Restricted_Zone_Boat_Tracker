@@ -749,6 +749,7 @@ public:
           //digitalWrite(LED_BUILTIN,HIGH);
           //buzzer_starttime = get_total_seconds();
           buzzer_on = true;
+          LOG("Buzzer on\r\n");
       }else{
         LOG("Coord is not in area\r\n");
 
