@@ -11,7 +11,7 @@
 #define MAX_ACK_TIMEOUT_COUNT 3
 #define ADAFRUIT_FEATHER_M0 // rachata
 //#define ADALOGGER
-#define DEBUG
+//#define DEBUG
 #include "debug.h"
 //#define STORAGE_DEBUG
 #include "storage.h"
@@ -737,7 +737,7 @@ public:
       //rachata start 
       //check if the point is in the area polygons
       if (is_area_file_exist){
-        LOG("lat=%f, lng=%f\r\n", GPS.longitude/100000.0, GPS.latitude/100000.0);
+        LOG("lat log=%f %f\r\n", GPS.latitude/100000.0,GPS.longitude/100000.0);
         coord_in_area = isPointInAreas(GPS.longitude/100000.0, GPS.latitude/100000.0,GPS.day,GPS.month);
       }
       TASK_SHORT_BLINK(_ts, 100);;//means that coordinate is received and is being processed
@@ -745,13 +745,13 @@ public:
       
       if (coord_in_area){//TODO: check if buzzer is working
         LOG("Coord is in area\r\n");
-          digitalWrite(BUZZER_PIN, HIGH);
+          digitalWrite(BUZZER_PIN, LOW); // buzzer is low level trigger
           digitalWrite(LED_BUILTIN,HIGH);
           //buzzer_starttime = get_total_seconds();
           buzzer_on = true;
       }else{
         LOG("Coord is not in area\r\n");
-          digitalWrite(BUZZER_PIN, LOW);
+          digitalWrite(BUZZER_PIN, HIGH);
           digitalWrite(LED_BUILTIN,LOW);
       }
       
@@ -773,7 +773,7 @@ public:
       if(buzzer_on){
           TASK_DELAY(BUZZER_DURATION*1000, _ts);
           LOG("Buzzer off\r\n");
-          digitalWrite(BUZZER_PIN, LOW);
+          digitalWrite(BUZZER_PIN, HIGH);
           digitalWrite(LED_BUILTIN,LOW);
           //buzzer_starttime = get_total_seconds();
           buzzer_on = false;
@@ -855,7 +855,10 @@ void setup() {
   pinMode(LED_BUILTIN, OUTPUT);
   pinMode(PIN_1PPS, INPUT_PULLUP);
   pinMode(PIN_GPS_EN, OUTPUT);
-  pinMode(BUZZER_PIN, OUTPUT); //rachata
+  pinMode(BUZZER_PIN, OUTPUT); //rachata start
+  digitalWrite(BUZZER_PIN, LOW); // test buzzer , buzzer is low level trigger
+  delay(1000);
+  digitalWrite(BUZZER_PIN, HIGH); //rachata end
   pinMode(PIN_RFM95_CS, OUTPUT);
   digitalWrite(PIN_RFM95_CS, HIGH);
   GPS_SERIAL.begin(9600);
