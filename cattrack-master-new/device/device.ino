@@ -11,7 +11,7 @@
 #define MAX_ACK_TIMEOUT_COUNT 3
 #define ADAFRUIT_FEATHER_M0 // rachata
 //#define ADALOGGER
-//#define DEBUG
+#define DEBUG
 #include "debug.h"
 //#define STORAGE_DEBUG
 #include "storage.h"
@@ -743,16 +743,17 @@ public:
       TASK_SHORT_BLINK(_ts, 100);;//means that coordinate is received and is being processed
       TASK_SHORT_BLINK(_ts, 100);
       
-      if (coord_in_area){//TODO: check if buzzer is working
+      if (coord_in_area){
         LOG("Coord is in area\r\n");
           digitalWrite(BUZZER_PIN, LOW); // buzzer is low level trigger
-          digitalWrite(LED_BUILTIN,HIGH);
+          //digitalWrite(LED_BUILTIN,HIGH);
           //buzzer_starttime = get_total_seconds();
           buzzer_on = true;
       }else{
         LOG("Coord is not in area\r\n");
+
           digitalWrite(BUZZER_PIN, HIGH);
-          digitalWrite(LED_BUILTIN,LOW);
+          //digitalWrite(LED_BUILTIN,LOW);
       }
       
       
@@ -774,7 +775,7 @@ public:
           TASK_DELAY(BUZZER_DURATION*1000, _ts);
           LOG("Buzzer off\r\n");
           digitalWrite(BUZZER_PIN, HIGH);
-          digitalWrite(LED_BUILTIN,LOW);
+          //digitalWrite(LED_BUILTIN,LOW);
           //buzzer_starttime = get_total_seconds();
           buzzer_on = false;
         
@@ -857,7 +858,7 @@ void setup() {
   pinMode(PIN_GPS_EN, OUTPUT);
   pinMode(BUZZER_PIN, OUTPUT); //rachata start
   digitalWrite(BUZZER_PIN, LOW); // test buzzer , buzzer is low level trigger
-  delay(1000);
+  delay(100);
   digitalWrite(BUZZER_PIN, HIGH); //rachata end
   pinMode(PIN_RFM95_CS, OUTPUT);
   digitalWrite(PIN_RFM95_CS, HIGH);
