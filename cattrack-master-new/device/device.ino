@@ -32,6 +32,7 @@ JsonArray all_areas;
 uint32_t buzzer_starttime = 0;
 bool buzzer_on = false;
 bool is_area_file_exist = false;
+bool coord_in_area = false;
 #define AREA_FILE_NAME "/AREA.txt"
 #define BUZZER_PIN A1
 #define BUZZER_DURATION 1 // in seconds
@@ -596,7 +597,6 @@ private:
   uint8_t _send_seq;
   PacketReport _pkt;
   bool    _first_record;
-  bool coord_in_area; //rachata
 
 public:
   virtual const char * get_name() {
