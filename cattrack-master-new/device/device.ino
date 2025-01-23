@@ -745,16 +745,23 @@ public:
       
       if (coord_in_area){
         LOG("Coord is in area\r\n");
-          digitalWrite(BUZZER_PIN, LOW); // buzzer is low level trigger
+          //digitalWrite(BUZZER_PIN, LOW); // buzzer is low level trigger
           //digitalWrite(LED_BUILTIN,HIGH);
           //buzzer_starttime = get_total_seconds();
-          buzzer_on = true;
+          //buzzer_on = true;
           LOG("Buzzer on\r\n");
+          if (!buzzerTaskActive) {
+            buzzerState = RUNNING;
+            taskBuzzer.run(); // TODO: test taskBuzzer
+          }
       }else{
         LOG("Coord is not in area\r\n");
 
           digitalWrite(BUZZER_PIN, HIGH);
           //digitalWrite(LED_BUILTIN,LOW);
+        if (buzzerTaskActive) {
+          buzzerState = STOPPED;
+        }
       }
       
       
@@ -772,7 +779,7 @@ public:
       // SD library always pull CS high after every read/write operation anyway.
       digitalWrite(PIN_SD_SS, HIGH);
 
-      if(buzzer_on){
+      /* if(buzzer_on ){
           TASK_DELAY(BUZZER_DURATION*1000, _ts);
           LOG("Buzzer off\r\n");
           digitalWrite(BUZZER_PIN, HIGH);
@@ -780,7 +787,7 @@ public:
           //buzzer_starttime = get_total_seconds();
           buzzer_on = false;
         
-      }
+      } */
       //rachata end
 #if !defined(ADALOGGER)
       // in non-ack mode, send logged data to gateway right away in the next
@@ -826,6 +833,50 @@ public:
     TASK_END();
   }
 } taskLogger;
+
+//rachata start // Buzzer task
+enum BuzzerState {
+    STOPPED,
+    RUNNING
+};
+
+BuzzerState buzzerState = STOPPED;
+bool buzzerTaskActive = false;
+class TaskBuzzer : public virtual Task {
+private:
+    uint32_t _ts;
+    bool _buzzing;
+
+public:
+    virtual const char* get_name() {
+        return "Buzzer";
+    }
+
+    virtual TASK(run()) {
+        TASK_BEGIN();
+        
+        _ts = millis();
+        _buzzing = false;// what is this for?
+        buzzerTaskActive = true;
+
+        while(buzzerState == RUNNING) {
+            digitalWrite(BUZZER_PIN, LOW);  // Buzzer on
+            _ts = millis();
+            TASK_DELAY(BUZZER_DURATION * 1000, _ts);
+            
+            digitalWrite(BUZZER_PIN, HIGH); // Buzzer off
+            _ts = millis();
+            TASK_DELAY(BUZZER_DURATION * 1000, _ts);
+            
+            TASK_YIELD();
+        }
+
+        digitalWrite(BUZZER_PIN, HIGH); // Ensure off when stopping
+        buzzerTaskActive = false;
+        TASK_END();
+    }
+} taskBuzzer;
+//rachata end
 
 /***********************************************
  * 
