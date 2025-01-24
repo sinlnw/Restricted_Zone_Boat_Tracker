@@ -36,8 +36,8 @@ bool coord_in_area = false;
 #define AREA_FILE_NAME "/AREA.txt"
 #define BUZZER_PIN A1
 #define BUZZER_DURATION 1 // in seconds
-#define IN_AREA_COL_INTERVAL 10 // in seconds
-#define TEST_INTERVAL 30 // in seconds
+#define IN_AREA_COL_INTERVAL 30 // in seconds
+#define TEST_INTERVAL 60 // in seconds
 #define USE_TEST_INTERVAL true 
 // #define ADAFRUIT_FEATHER_M0
 //rachata end
