@@ -605,12 +605,11 @@ bool is_date_in_day_month_range(int test_day, int test_month, int start_day, int
 
 // Buzzer task
 
-class TaskBuzzer : public virtual Task {
+class TaskBuzzer : public virtual Task { //TODO: fix buzzer stuck
 private:
-    uint32_t _ts;
-    bool _buzzing;
-    uint32_t _next_wakeup;
-
+    uint32_t _next_wakeup = 0;
+    uint32_t _ts = 0;
+    
 public:
     virtual const char* get_name() {
         return "Buzzer";
@@ -620,30 +619,43 @@ public:
         TASK_BEGIN();
         LOG("Buzzer task started\r\n");
         _ts = 0;
-        _buzzing = false;// what is this for?
+        //_buzzing = false;
         buzzerTaskActive = true;
-        _next_wakeup = 0;
+        //_next_wakeup = 0;
 
         while(buzzerState == RUNNING) {
             digitalWrite(BUZZER_PIN, LOW);  // Buzzer on
             LOG("Buzzer on\r\n");
-            //_ts = millis();
-            //TASK_DELAY(BUZZER_DURATION * 1000, _ts);
-            _next_wakeup = get_total_seconds() + BUZZER_DURATION;
-            set_wakeup_time(_next_wakeup);
-            TASK_WAIT_UNTIL(get_total_seconds() >= get_wakeup_time());
-            reset_wakeup_time();
+
+            _ts = millis();
+            TASK_DELAY(BUZZER_DURATION * 1000, _ts);
+
+            //_next_wakeup = get_total_seconds() + BUZZER_DURATION;
+            //set_wakeup_time(_next_wakeup);
+            //TASK_WAIT_UNTIL(get_total_seconds() >= get_wakeup_time());
+            //reset_wakeup_time();
+
+            // TASK_TIMER_START(_ts); // this causes reset
+            // while(!TASK_TIMER_EXPIRED(_ts, BUZZER_DURATION * 1000)){}
+
+        
             
             digitalWrite(BUZZER_PIN, HIGH); // Buzzer off
             LOG("Buzzer off\r\n");
-            //_ts = millis();
-            //TASK_DELAY(BUZZER_DURATION * 1000, _ts);
-            _next_wakeup = get_total_seconds() + BUZZER_DURATION;
-            set_wakeup_time(_next_wakeup);
-            TASK_WAIT_UNTIL(get_total_seconds() >= get_wakeup_time());
-            reset_wakeup_time();
+
+            _ts = millis();
+            TASK_DELAY(BUZZER_DURATION * 1000, _ts);
+
+            //_next_wakeup = get_total_seconds() + BUZZER_DURATION;
+            //set_wakeup_time(_next_wakeup);
+            //TASK_WAIT_UNTIL(get_total_seconds() >= get_wakeup_time());
+            //reset_wakeup_time();
+
+            // TASK_TIMER_START(_ts);
+            // while(!TASK_TIMER_EXPIRED(_ts, BUZZER_DURATION * 1000)){}
+
             
-            //TASK_YIELD();
+           
         }
         //buzzerState = STOPPED;
         digitalWrite(BUZZER_PIN, HIGH); // Ensure off when stopping
@@ -1016,6 +1028,9 @@ void setup() {
     num_tasks = 1;
     tasks[0] = &taskLogger;
   }
+
+  buzzerState = RUNNING;// rachata test taskbuzzer
+  taskBuzzer.run();
 }
 
 /***********************************************
