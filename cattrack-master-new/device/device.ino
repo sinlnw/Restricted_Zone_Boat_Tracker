@@ -33,6 +33,14 @@ JsonArray all_areas;
 //bool buzzer_on = false;
 bool is_area_file_exist = false;
 bool coord_in_area = false;
+enum BuzzerState {
+    STOPPED,
+    RUNNING
+};
+
+BuzzerState buzzerState = STOPPED;
+bool buzzerTaskActive = false;
+
 #define AREA_FILE_NAME "/AREA.txt"
 #define BUZZER_PIN A1
 #define BUZZER_DURATION 1 // in seconds
@@ -583,6 +591,45 @@ bool is_date_in_day_month_range(int test_day, int test_month, int start_day, int
                 (start_month < test_month && test_month < end_month));
     }
 }
+
+
+
+// Buzzer task
+
+class TaskBuzzer : public virtual Task {
+private:
+    uint32_t _ts;
+    bool _buzzing;
+
+public:
+    virtual const char* get_name() {
+        return "Buzzer";
+    }
+
+    virtual TASK(run()) {
+        TASK_BEGIN();
+        
+        _ts = millis();
+        _buzzing = false;// what is this for?
+        buzzerTaskActive = true;
+
+        while(buzzerState == RUNNING) {
+            digitalWrite(BUZZER_PIN, LOW);  // Buzzer on
+            _ts = millis();
+            TASK_DELAY(BUZZER_DURATION * 1000, _ts);
+            
+            digitalWrite(BUZZER_PIN, HIGH); // Buzzer off
+            _ts = millis();
+            TASK_DELAY(BUZZER_DURATION * 1000, _ts);
+            
+            TASK_YIELD();
+        }
+        //buzzerState = STOPPED;
+        digitalWrite(BUZZER_PIN, HIGH); // Ensure off when stopping
+        buzzerTaskActive = false;
+        TASK_END();
+    }
+} taskBuzzer;
 // Rachata end
 
 /***********************************************
@@ -834,49 +881,7 @@ public:
   }
 } taskLogger;
 
-//rachata start // Buzzer task
-enum BuzzerState {
-    STOPPED,
-    RUNNING
-};
 
-BuzzerState buzzerState = STOPPED;
-bool buzzerTaskActive = false;
-class TaskBuzzer : public virtual Task {
-private:
-    uint32_t _ts;
-    bool _buzzing;
-
-public:
-    virtual const char* get_name() {
-        return "Buzzer";
-    }
-
-    virtual TASK(run()) {
-        TASK_BEGIN();
-        
-        _ts = millis();
-        _buzzing = false;// what is this for?
-        buzzerTaskActive = true;
-
-        while(buzzerState == RUNNING) {
-            digitalWrite(BUZZER_PIN, LOW);  // Buzzer on
-            _ts = millis();
-            TASK_DELAY(BUZZER_DURATION * 1000, _ts);
-            
-            digitalWrite(BUZZER_PIN, HIGH); // Buzzer off
-            _ts = millis();
-            TASK_DELAY(BUZZER_DURATION * 1000, _ts);
-            
-            TASK_YIELD();
-        }
-        //buzzerState = STOPPED;
-        digitalWrite(BUZZER_PIN, HIGH); // Ensure off when stopping
-        buzzerTaskActive = false;
-        TASK_END();
-    }
-} taskBuzzer;
-//rachata end
 
 /***********************************************
  * 
