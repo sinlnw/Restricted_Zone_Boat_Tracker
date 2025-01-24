@@ -631,7 +631,7 @@ public:
             //TASK_DELAY(BUZZER_DURATION * 1000, _ts);
             _next_wakeup = get_total_seconds() + BUZZER_DURATION;
             set_wakeup_time(_next_wakeup);
-            TASK_WAIT_UNTIL(get_total_seconds() >= get_wakeup_time())
+            TASK_WAIT_UNTIL(get_total_seconds() >= get_wakeup_time());
             reset_wakeup_time();
             
             digitalWrite(BUZZER_PIN, HIGH); // Buzzer off
@@ -640,7 +640,7 @@ public:
             //TASK_DELAY(BUZZER_DURATION * 1000, _ts);
             _next_wakeup = get_total_seconds() + BUZZER_DURATION;
             set_wakeup_time(_next_wakeup);
-            TASK_WAIT_UNTIL(get_total_seconds() >= get_wakeup_time())
+            TASK_WAIT_UNTIL(get_total_seconds() >= get_wakeup_time());
             reset_wakeup_time();
             
             //TASK_YIELD();
