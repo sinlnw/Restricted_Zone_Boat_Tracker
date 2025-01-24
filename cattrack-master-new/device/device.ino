@@ -30,7 +30,7 @@
 JsonDocument all_areas_doc;
 JsonArray all_areas;
 //uint32_t buzzer_starttime = 0;
-//bool buzzer_on = false;
+bool buzzer_on = false;
 bool is_area_file_exist = false;
 bool coord_in_area = false;
 enum BuzzerState {
@@ -826,22 +826,23 @@ public:
       
       if (coord_in_area){
         LOG("Coord is in area\r\n");
-          //digitalWrite(BUZZER_PIN, LOW); // buzzer is low level trigger
-          //digitalWrite(LED_BUILTIN,HIGH);
-          //buzzer_starttime = get_total_seconds();
-          //buzzer_on = true;
-          if (!buzzerTaskActive) {
+          digitalWrite(BUZZER_PIN, LOW); // buzzer is low level trigger
+          digitalWrite(LED_BUILTIN,HIGH);
+          buzzer_on = true;
+          
+          /* if (!buzzerTaskActive) {
             buzzerState = RUNNING;
             taskBuzzer.run();
-          }
+          } */
       }else{
         LOG("Coord is not in area\r\n");
 
-          //digitalWrite(BUZZER_PIN, HIGH);
-          //digitalWrite(LED_BUILTIN,LOW);
-        if (buzzerTaskActive) {
+        digitalWrite(BUZZER_PIN, HIGH);
+        digitalWrite(LED_BUILTIN,LOW);
+
+        /* if (buzzerTaskActive) {
           buzzerState = STOPPED;
-        }
+        } */
       }
       
       
@@ -859,15 +860,14 @@ public:
       // SD library always pull CS high after every read/write operation anyway.
       digitalWrite(PIN_SD_SS, HIGH);
 
-      /* if(buzzer_on ){
+      if(buzzer_on ){
           TASK_DELAY(BUZZER_DURATION*1000, _ts);
           LOG("Buzzer off\r\n");
           digitalWrite(BUZZER_PIN, HIGH);
           //digitalWrite(LED_BUILTIN,LOW);
-          //buzzer_starttime = get_total_seconds();
           buzzer_on = false;
         
-      } */
+      }
       //rachata end
 #if !defined(ADALOGGER)
       // in non-ack mode, send logged data to gateway right away in the next
