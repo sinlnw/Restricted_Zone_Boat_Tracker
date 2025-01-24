@@ -356,17 +356,26 @@ void sleeping_wait(uint16_t seconds) {
   }
   wake_now = false;
 #else
-  uint32_t until = get_total_seconds() + seconds;
-  uint32_t remain;
-  while ((remain = until - get_total_seconds()) > 0) {
-    if (remain > 8)
-      adjustTime(Watchdog.sleep(8000)/1000);
-    else if (remain > 4)
-      adjustTime(Watchdog.sleep(4000)/1000);
-    else if (remain > 2)
-      adjustTime(Watchdog.sleep(2000)/1000);
-    else if (remain > 1)
-      adjustTime(Watchdog.sleep(1000)/1000);
+  //rachata start, prevent sleep when buzzer is active
+  uint32_t ts_2 = millis();
+  if (buzzerTaskActive){
+    while (millis() - start < seconds * 1000) {
+      watchdog_reset();
+      delay(100); // Small delay to prevent tight loop
+    }
+  } else { //rachata end
+    uint32_t until = get_total_seconds() + seconds;
+    uint32_t remain;
+    while ((remain = until - get_total_seconds()) > 0) {
+      if (remain > 8)
+        adjustTime(Watchdog.sleep(8000)/1000);
+      else if (remain > 4)
+        adjustTime(Watchdog.sleep(4000)/1000);
+      else if (remain > 2)
+        adjustTime(Watchdog.sleep(2000)/1000);
+      else if (remain > 1)
+        adjustTime(Watchdog.sleep(1000)/1000);
+    }
   }
 #endif
   LOG_TS("Waking up\r\n");
