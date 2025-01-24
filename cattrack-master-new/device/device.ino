@@ -600,6 +600,7 @@ class TaskBuzzer : public virtual Task {
 private:
     uint32_t _ts;
     bool _buzzing;
+    uint32_t _next_wakeup;
 
 public:
     virtual const char* get_name() {
@@ -608,25 +609,37 @@ public:
 
     virtual TASK(run()) {
         TASK_BEGIN();
-        
-        _ts = millis();
+        LOG("Buzzer task started\r\n");
+        _ts = 0;
         _buzzing = false;// what is this for?
         buzzerTaskActive = true;
+        _next_wakeup = 0;
 
         while(buzzerState == RUNNING) {
             digitalWrite(BUZZER_PIN, LOW);  // Buzzer on
-            _ts = millis();
-            TASK_DELAY(BUZZER_DURATION * 1000, _ts);
+            LOG("Buzzer on\r\n");
+            //_ts = millis();
+            //TASK_DELAY(BUZZER_DURATION * 1000, _ts);
+            _next_wakeup = get_total_seconds() + BUZZER_DURATION;
+            set_wakeup_time(_next_wakeup);
+            TASK_WAIT_UNTIL(get_total_seconds() >= get_wakeup_time())
+            reset_wakeup_time();
             
             digitalWrite(BUZZER_PIN, HIGH); // Buzzer off
-            _ts = millis();
-            TASK_DELAY(BUZZER_DURATION * 1000, _ts);
+            LOG("Buzzer off\r\n");
+            //_ts = millis();
+            //TASK_DELAY(BUZZER_DURATION * 1000, _ts);
+            _next_wakeup = get_total_seconds() + BUZZER_DURATION;
+            set_wakeup_time(_next_wakeup);
+            TASK_WAIT_UNTIL(get_total_seconds() >= get_wakeup_time())
+            reset_wakeup_time();
             
-            TASK_YIELD();
+            //TASK_YIELD();
         }
         //buzzerState = STOPPED;
         digitalWrite(BUZZER_PIN, HIGH); // Ensure off when stopping
         buzzerTaskActive = false;
+        LOG("Buzzer task stopped\r\n");
         TASK_END();
     }
 } taskBuzzer;
@@ -796,7 +809,6 @@ public:
           //digitalWrite(LED_BUILTIN,HIGH);
           //buzzer_starttime = get_total_seconds();
           //buzzer_on = true;
-          LOG("Buzzer on\r\n");
           if (!buzzerTaskActive) {
             buzzerState = RUNNING;
             taskBuzzer.run();
