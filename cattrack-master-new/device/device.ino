@@ -29,8 +29,8 @@
 #include <ArduinoJson.h>
 JsonDocument all_areas_doc;
 JsonArray all_areas;
-uint32_t buzzer_starttime = 0;
-bool buzzer_on = false;
+//uint32_t buzzer_starttime = 0;
+//bool buzzer_on = false;
 bool is_area_file_exist = false;
 bool coord_in_area = false;
 #define AREA_FILE_NAME "/AREA.txt"
@@ -752,12 +752,12 @@ public:
           LOG("Buzzer on\r\n");
           if (!buzzerTaskActive) {
             buzzerState = RUNNING;
-            taskBuzzer.run(); // TODO: test taskBuzzer
+            taskBuzzer.run();
           }
       }else{
         LOG("Coord is not in area\r\n");
 
-          digitalWrite(BUZZER_PIN, HIGH);
+          //digitalWrite(BUZZER_PIN, HIGH);
           //digitalWrite(LED_BUILTIN,LOW);
         if (buzzerTaskActive) {
           buzzerState = STOPPED;
@@ -870,7 +870,7 @@ public:
             
             TASK_YIELD();
         }
-
+        //buzzerState = STOPPED;
         digitalWrite(BUZZER_PIN, HIGH); // Ensure off when stopping
         buzzerTaskActive = false;
         TASK_END();
