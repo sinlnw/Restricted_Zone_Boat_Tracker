@@ -599,7 +599,7 @@ bool is_date_in_day_month_range(int test_day, int test_month, int start_day, int
 
 // Buzzer task
 
-class TaskBuzzer : public virtual Task { //TODO: fix buzzer stuck
+class TaskBuzzer : public virtual Task {
 private:
     uint32_t _next_wakeup = 0;
     uint32_t _ts = 0;
