@@ -344,6 +344,7 @@ void watchdog_reset() {
  */
 void sleeping_wait(uint16_t seconds) {
   if (seconds == 0) return;
+  if (buzzerTaskActive) return; // rachata if buzzer is actived, don't sleep
   LOG_TS("Going to sleep for %d second(s)\r\n", seconds);
   LED_OFF();
 #if defined(DEBUG)
@@ -356,27 +357,20 @@ void sleeping_wait(uint16_t seconds) {
   }
   wake_now = false;
 #else
-  //rachata start, prevent sleep when buzzer is active
-  uint32_t ts_2 = millis();
-  if (buzzerTaskActive){
-    while (millis() - start < seconds * 1000) {
-      watchdog_reset();
-      delay(100); // Small delay to prevent tight loop
-    }
-  } else { //rachata end
-    uint32_t until = get_total_seconds() + seconds;
-    uint32_t remain;
-    while ((remain = until - get_total_seconds()) > 0) {
-      if (remain > 8)
-        adjustTime(Watchdog.sleep(8000)/1000);
-      else if (remain > 4)
-        adjustTime(Watchdog.sleep(4000)/1000);
-      else if (remain > 2)
-        adjustTime(Watchdog.sleep(2000)/1000);
-      else if (remain > 1)
-        adjustTime(Watchdog.sleep(1000)/1000);
-    }
+ 
+  uint32_t until = get_total_seconds() + seconds;
+  uint32_t remain;
+  while ((remain = until - get_total_seconds()) > 0) {
+    if (remain > 8)
+      adjustTime(Watchdog.sleep(8000)/1000);
+    else if (remain > 4)
+      adjustTime(Watchdog.sleep(4000)/1000);
+    else if (remain > 2)
+      adjustTime(Watchdog.sleep(2000)/1000);
+    else if (remain > 1)
+      adjustTime(Watchdog.sleep(1000)/1000);
   }
+  
 #endif
   LOG_TS("Waking up\r\n");
   LED_ON();
@@ -617,7 +611,7 @@ public:
 
     virtual TASK(run()) {
         TASK_BEGIN();
-        LOG("Buzzer task started\r\n");
+        //LOG("Buzzer task started\r\n");
         _ts = 0;
         //_buzzing = false;
         buzzerTaskActive = true;
@@ -660,7 +654,7 @@ public:
         //buzzerState = STOPPED;
         digitalWrite(BUZZER_PIN, HIGH); // Ensure off when stopping
         buzzerTaskActive = false;
-        LOG("Buzzer task stopped\r\n");
+        //LOG("Buzzer task stopped\r\n");
         TASK_END();
     }
 } taskBuzzer;
@@ -826,23 +820,23 @@ public:
       
       if (coord_in_area){
         LOG("Coord is in area\r\n");
-          digitalWrite(BUZZER_PIN, LOW); // buzzer is low level trigger
-          digitalWrite(LED_BUILTIN,HIGH);
+          //digitalWrite(BUZZER_PIN, LOW); // buzzer is low level trigger
+          //digitalWrite(LED_BUILTIN,HIGH);
           buzzer_on = true;
           
-          /* if (!buzzerTaskActive) {
+          if (!buzzerTaskActive) {
             buzzerState = RUNNING;
-            taskBuzzer.run();
-          } */
+            //taskBuzzer.run();
+          }
       }else{
         LOG("Coord is not in area\r\n");
 
-        digitalWrite(BUZZER_PIN, HIGH);
-        digitalWrite(LED_BUILTIN,LOW);
+        //digitalWrite(BUZZER_PIN, HIGH);
+        //digitalWrite(LED_BUILTIN,LOW);
 
-        /* if (buzzerTaskActive) {
+        if (buzzerTaskActive) {
           buzzerState = STOPPED;
-        } */
+        }
       }
       
       
@@ -860,14 +854,14 @@ public:
       // SD library always pull CS high after every read/write operation anyway.
       digitalWrite(PIN_SD_SS, HIGH);
 
-      if(buzzer_on ){
+      /* if(buzzer_on ){
           TASK_DELAY(BUZZER_DURATION*1000, _ts);
           LOG("Buzzer off\r\n");
           digitalWrite(BUZZER_PIN, HIGH);
           //digitalWrite(LED_BUILTIN,LOW);
           buzzer_on = false;
         
-      }
+      } */
       //rachata end
 #if !defined(ADALOGGER)
       // in non-ack mode, send logged data to gateway right away in the next
@@ -1029,8 +1023,6 @@ void setup() {
     tasks[0] = &taskLogger;
   }
 
-  buzzerState = RUNNING;// rachata test taskbuzzer
-  taskBuzzer.run();
 }
 
 /***********************************************
@@ -1040,6 +1032,7 @@ void loop() {
   uint32_t min_wakeup_time = (uint32_t)-1;
   uint32_t wakeup_time;
   uint32_t current;
+  taskBuzzer.run();// rachata test
   for (uint8_t i=0; i<num_tasks; i++) {
     // always run a task no matter it is sleeping or not; in case it needs
     // to be woken up by some other source
