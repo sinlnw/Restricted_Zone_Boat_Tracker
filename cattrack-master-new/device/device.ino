@@ -11,7 +11,7 @@
 #define MAX_ACK_TIMEOUT_COUNT 3
 #define ADAFRUIT_FEATHER_M0 // rachata
 //#define ADALOGGER
-#define DEBUG
+//#define DEBUG
 #include "debug.h"
 //#define STORAGE_DEBUG
 #include "storage.h"
@@ -815,9 +815,10 @@ public:
         LOG("lat log=%f %f\r\n", GPS.latitude/100000.0,GPS.longitude/100000.0);
         coord_in_area = isPointInAreas(GPS.longitude/100000.0, GPS.latitude/100000.0,GPS.day,GPS.month);
       }
-      TASK_SHORT_BLINK(_ts, 100);;//means that coordinate is received and is being processed
-      TASK_SHORT_BLINK(_ts, 100);
-      
+      digitalWrite(BUZZER_PIN, LOW); // location is found
+      TASK_DELAY(1000, _ts);
+      digitalWrite(BUZZER_PIN, HIGH);
+
       if (coord_in_area){
         LOG("Coord is in area\r\n");
           //digitalWrite(BUZZER_PIN, LOW); // buzzer is low level trigger

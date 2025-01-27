@@ -14,7 +14,7 @@ collect_interval_night  180
 day_start_hour          6
 day_end_hour            18
 time_zone               7
-gps_max_wait_for_fix    120
-next_collect_no_fix     120
+gps_max_wait_for_fix    300
+next_collect_no_fix     60
 total_slots             3
 slot_interval           30
