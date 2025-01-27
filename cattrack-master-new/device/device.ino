@@ -188,6 +188,10 @@ void init_card() {
     for (JsonObject myarea : all_areas){
       area_count++;
       LOG("Area %d\r\n", area_count);
+      if (myarea["all_drawings"].isNull()) {
+        LOG("No polygon in this area\r\n");
+        continue;
+      }
       JsonArray all_polygon = myarea["all_drawings"].as<JsonArray>(); // read all polygons of each area
       
 
@@ -531,6 +535,10 @@ bool isPointInAreas(float test_long, float test_lat, int test_day, int test_mont
       LOG("skip area with %d/%d - %d/%d\r\n", start_day, start_month, end_day, end_month);
       continue;
     }
+    if (myarea["all_drawings"].isNull()) {
+        LOG("No polygon in area with %d/%d - %d/%d\r\n",start_day, start_month, end_day, end_month);
+        continue;
+      }
     JsonArray all_polygon = myarea["all_drawings"].as<JsonArray>();
     for(JsonObject mypolygon : all_polygon){
         // Access the coordinates array
@@ -815,8 +823,12 @@ public:
         LOG("lat log=%f %f\r\n", GPS.latitude/100000.0,GPS.longitude/100000.0);
         coord_in_area = isPointInAreas(GPS.longitude/100000.0, GPS.latitude/100000.0,GPS.day,GPS.month);
       }
-      digitalWrite(BUZZER_PIN, LOW); // location is found
-      TASK_DELAY(1000, _ts);
+      digitalWrite(BUZZER_PIN, LOW); // location is found, beep 2 times
+      TASK_DELAY(500, _ts);
+      digitalWrite(BUZZER_PIN, HIGH);
+      TASK_DELAY(500, _ts);
+      digitalWrite(BUZZER_PIN, LOW); //
+      TASK_DELAY(500, _ts);
       digitalWrite(BUZZER_PIN, HIGH);
 
       if (coord_in_area){
