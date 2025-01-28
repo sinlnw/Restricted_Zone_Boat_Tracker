@@ -11,7 +11,7 @@
 #define MAX_ACK_TIMEOUT_COUNT 3
 #define ADAFRUIT_FEATHER_M0 // rachata
 //#define ADALOGGER
-//#define DEBUG
+#define DEBUG
 #include "debug.h"
 //#define STORAGE_DEBUG
 #include "storage.h"
@@ -823,12 +823,14 @@ public:
         LOG("lat log=%f %f\r\n", GPS.latitude/100000.0,GPS.longitude/100000.0);
         coord_in_area = isPointInAreas(GPS.longitude/100000.0, GPS.latitude/100000.0,GPS.day,GPS.month);
       }
+
+      uint32_t ts2 = 0;
       digitalWrite(BUZZER_PIN, LOW); // location is found, beep 2 times
-      TASK_DELAY(500, _ts);
+      delay(50);
       digitalWrite(BUZZER_PIN, HIGH);
-      TASK_DELAY(500, _ts);
-      digitalWrite(BUZZER_PIN, LOW); //
-      TASK_DELAY(500, _ts);
+      delay(50);
+      digitalWrite(BUZZER_PIN, LOW);
+      delay(50);
       digitalWrite(BUZZER_PIN, HIGH);
 
       if (coord_in_area){
