@@ -11,7 +11,7 @@
 #define MAX_ACK_TIMEOUT_COUNT 3
 #define ADAFRUIT_FEATHER_M0 // rachata
 //#define ADALOGGER
-#define DEBUG
+//#define DEBUG
 #include "debug.h"
 //#define STORAGE_DEBUG
 #include "storage.h"
@@ -548,7 +548,7 @@ bool isPointInAreas(float test_long, float test_lat, int test_day, int test_mont
         if (coordinates.size() < 3) {
           continue;
         } */
-
+        c = false;
         float prev_longitude = 0.0;
         float prev_latitude = 0.0;
         bool first_coordinate = true;
@@ -574,6 +574,9 @@ bool isPointInAreas(float test_long, float test_lat, int test_day, int test_mont
           prev_longitude = longitude;
           prev_latitude = latitude;
 
+        }
+        if (c){
+          return c;
         }
       }
   }
