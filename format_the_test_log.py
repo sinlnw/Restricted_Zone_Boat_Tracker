@@ -88,7 +88,7 @@ def main():
     input_file = "test_log.txt"
     output_file = "processed_logs.json"
 
-    mongo_connection = "mongodb+srv://rachatape:XqRAviqUSyi0breY@boattrack-db.br1zm.mongodb.net/"
+    mongo_connection = "" # INSERT CONNECTION STRING
     database = "test"
     collection = "test"
 
